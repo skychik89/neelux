@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neelux</title>
+<meta name="description" content="Neelux — команда, которая делает проекты под ключ: быстро, прозрачно, без агентской бюрократии.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #fbfbfa;
+    --bg-soft: #f2f1ee;
+    --card: #ffffff;
+    --line: #e4e2dd;
+    --ink: #101010;
+    --ink-soft: #55534c;
+    --ink-dim: #8f8c83;
+
+    --accent: #2b2a26;
+    --lime: #d6ff3f;
+    --lime-dim: #d6ff3f2e;
+    --discord: #5865f2;
+
+    --radius: 18px;
+    --radius-sm: 12px;
+    --ease: cubic-bezier(.16,1,.3,1);
+  }
+
+  *{ box-sizing: border-box; }
+  ::selection{ background: var(--ink); color: var(--lime); }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0; background: var(--bg); color: var(--ink);
+    font-family:'Manrope', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img{ max-width:100%; }
+  h1,h2,h3{ font-family:'Unbounded', sans-serif; margin:0; letter-spacing:-0.01em; text-wrap:balance; }
+  a{ color:inherit; text-decoration:none; }
+  .mono{ font-family:'JetBrains Mono', ui-monospace, monospace; }
+  .wrap{ max-width: 1180px; margin:0 auto; padding-inline: 32px; }
+  .label{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color: var(--ink-dim); display:inline-flex; align-items:center; gap:8px;
+  }
+  .label::before{ content:''; width:16px; height:1px; background: var(--ink-dim); }
+  .accent-word{ position:relative; }
+  .accent-word::after{
+    content:''; position:absolute; left:-2%; right:-2%; bottom:.06em; height:.32em;
+    background: var(--lime); z-index:-1; transform: scaleX(0); transform-origin:left;
+    transition: transform .6s var(--ease);
+  }
+  .in-view .accent-word::after, .reveal-done .accent-word::after{ transform: scaleX(1); }
+
+  /* reveal-on-scroll */
+  .reveal{ opacity:0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+  .reveal.in-view{ opacity:1; transform:none; }
+  .stagger > *{ transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .stagger:not(.in-view) > *{ opacity:0; transform: translateY(18px); }
+  .stagger > *:nth-child(1){ transition-delay:.02s; } .stagger > *:nth-child(2){ transition-delay:.08s; }
+  .stagger > *:nth-child(3){ transition-delay:.14s; } .stagger > *:nth-child(4){ transition-delay:.2s; }
+  .stagger > *:nth-child(5){ transition-delay:.26s; } .stagger > *:nth-child(6){ transition-delay:.32s; }
+  .stagger > *:nth-child(7){ transition-delay:.38s; } .stagger > *:nth-child(8){ transition-delay:.44s; }
+
+  /* ---------- nav ---------- */
+  .topnav{
+    position: sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 20px 32px; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px); border-bottom: 1px solid transparent;
+    transition: border-color .4s var(--ease), background .4s var(--ease);
+  }
+  .topnav.scrolled{ border-color: var(--line); }
+  .mark{ display:flex; align-items:center; gap:10px; font-family:'Unbounded',sans-serif; font-weight:700; font-size:16px; }
+  .mark .dot{ width:8px; height:8px; border-radius:50%; background: var(--lime); box-shadow: 0 0 0 4px var(--lime-dim); }
+  .navlinks{ display:flex; align-items:center; gap:28px; font-size:13.5px; color: var(--ink-soft); }
+  .navlinks a:not(.navcta){ position:relative; transition: color .3s var(--ease); }
+  .navlinks a:not(.navcta)::after{ content:''; position:absolute; left:0; right:100%; bottom:-4px; height:1px; background: var(--ink); transition: right .35s var(--ease); }
+  .navlinks a:not(.navcta):hover{ color: var(--ink); }
+  .navlinks a:not(.navcta):hover::after{ right:0; }
+  .navcta{
+    display:inline-flex; align-items:center; gap:8px;
+    background: var(--ink); color:#fff; padding: 10px 18px; border-radius: 999px;
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.04em;
+    transition: transform .35s var(--ease), background .35s var(--ease), color .35s var(--ease);
+  }
+  .navcta:hover{ transform: translateY(-2px); background: var(--lime); color: var(--ink); }
+
+  /* ---------- section skeleton ---------- */
+  section{ position:relative; padding: 120px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+  .section-idx{ font-family:'JetBrains Mono',monospace; font-size:12px; color: var(--ink-dim); }
+  .section-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 44px; gap:16px; flex-wrap:wrap; }
+  .section-heading{ font-size: clamp(30px, 4.2vw, 46px); max-width: 18ch; margin-bottom: 18px; }
+  .section-sub{ color: var(--ink-soft); max-width: 58ch; font-size: 16px; line-height: 1.7; margin:0; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding-top: 72px; padding-bottom: 90px; border-bottom: 1px solid var(--line); }
+  .hero-badge{
+    display:inline-flex; align-items:center; gap:8px; padding: 7px 14px; border-radius:999px;
+    border:1px solid var(--line); background: var(--card); font-size:12.5px; color: var(--ink-soft);
+    margin-bottom: 28px;
+  }
+  .hero-badge .pip{ width:6px; height:6px; border-radius:50%; background: var(--lime); box-shadow:0 0 0 3px var(--lime-dim); animation: pip-pulse 2.4s ease-in-out infinite; }
+  @keyframes pip-pulse{ 0%,100%{ opacity:.6; } 50%{ opacity:1; } }
+  .hero-title{ font-size: clamp(42px, 7vw, 84px); line-height: .98; max-width: 15ch; }
+  .hero-title span{ display:inline-block; }
+  .hero-lede{ margin-top: 26px; max-width: 56ch; font-size: 18px; line-height: 1.7; color: var(--ink-soft); }
+  .hero-actions{ display:flex; gap:14px; flex-wrap:wrap; margin-top: 36px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px; font-family:'JetBrains Mono',monospace; font-size:13.5px;
+    letter-spacing:.03em; padding: 15px 26px; border-radius: 999px; transition: transform .35s var(--ease), box-shadow .35s var(--ease), background .35s var(--ease), color .35s var(--ease);
+  }
+  .btn-primary{ background: var(--ink); color:#fff; }
+  .btn-primary:hover{ transform: translateY(-3px); background: var(--lime); color: var(--ink); box-shadow: 0 16px 32px -16px rgba(0,0,0,.25); }
+  .btn-ghost{ border:1px solid var(--line); background: var(--card); color: var(--ink); }
+  .btn-ghost:hover{ transform: translateY(-3px); border-color: var(--ink); }
+  .btn-discord{ background: var(--discord); color:#fff; }
+  .btn-discord:hover{ transform: translateY(-3px); box-shadow: 0 16px 32px -16px rgba(88,101,242,.55); }
+
+  .hero-stats{ display:flex; gap:48px; margin-top: 64px; flex-wrap:wrap; }
+  .hstat b{ display:block; font-family:'Unbounded',sans-serif; font-size: clamp(24px,3vw,32px); }
+  .hstat span{ font-size:12.5px; color: var(--ink-dim); text-transform:uppercase; letter-spacing:.06em; }
+
+  /* ---------- marquee ---------- */
+  .marquee{ border-bottom:1px solid var(--line); padding: 18px 0; overflow:hidden; background: var(--bg-soft); }
+  .marquee-track{ display:flex; gap: 48px; width: max-content; animation: marquee 26s linear infinite; }
+  @keyframes marquee{ from{ transform: translateX(0); } to{ transform: translateX(-50%); } }
+  .marquee-track span{ font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color: var(--ink-dim); white-space:nowrap; }
+  .marquee-track span.hi{ color: var(--ink); }
+
+  /* ---------- principles ---------- */
+  .principles-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:1px; background: var(--line); border:1px solid var(--line); border-radius: var(--radius); overflow:hidden; }
+  .principle{ background: var(--card); padding: 30px 26px; display:flex; flex-direction:column; gap:12px; transition: background .4s var(--ease), transform .4s var(--ease); }
+  .principle:hover{ background: var(--bg-soft); transform: translateY(-2px); }
+  .principle .num{ font-family:'JetBrains Mono',monospace; font-size:12px; color: var(--ink-dim); }
+  .principle h3{ font-size:16.5px; font-weight:600; font-family:'Manrope',sans-serif; }
+  .principle p{ margin:0; color: var(--ink-soft); font-size:13.5px; line-height:1.65; }
+
+  /* ---------- turnkey process ---------- */
+  #turnkey{ background: var(--ink); color: #fff; border-bottom:none; }
+  #turnkey .section-sub{ color: #c9c8c2; }
+  #turnkey .label{ color:#c9c8c2; }
+  #turnkey .label::before{ background:#c9c8c2; }
+  .steps{ display:grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: #2a2a26; border:1px solid #2a2a26; border-radius: var(--radius); overflow:hidden; }
+  .step{ background:#151512; padding: 28px 22px; display:flex; flex-direction:column; gap: 14px; position:relative; transition: background .4s var(--ease); }
+  .step:hover{ background:#1c1c18; }
+  .step .stepnum{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:26px; color: var(--lime); }
+  .step h3{ font-size:15px; color:#fff; }
+  .step p{ margin:0; color:#a8a69f; font-size:13px; line-height:1.6; }
+  .step::after{ content:'→'; position:absolute; right: -1px; top:50%; transform: translateY(-50%); color:#3a3a35; font-size:18px; }
+  .step:last-child::after{ display:none; }
+
+  /* ---------- team ---------- */
+  .team-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .member{ border:1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 26px; display:flex; flex-direction:column; gap:12px; transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease); }
+  .member:hover{ transform: translateY(-4px); box-shadow: 0 20px 40px -26px rgba(0,0,0,.2); border-color: var(--ink); }
+  .m-avatar{ width:44px; height:44px; border-radius:50%; background: var(--bg-soft); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:16px; text-transform:uppercase; }
+  .m-role{ font-family:'JetBrains Mono',monospace; font-size:11.5px; color: var(--ink-dim); letter-spacing:.04em; text-transform:uppercase; }
+  .member p{ margin: 2px 0 0; color: var(--ink-soft); font-size:13.5px; line-height:1.6; }
+  .m-tags{ margin-top:auto; display:flex; flex-wrap:wrap; gap:7px; }
+  .m-tags span{ font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color: var(--ink-soft); border:1px solid var(--line); border-radius:999px; padding:4px 10px; }
+
+  /* ---------- advantages ---------- */
+  .adv-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:16px; }
+  .adv-card{ border:1px solid var(--line); border-radius: var(--radius); background: var(--card); padding:26px; display:flex; flex-direction:column; gap:12px; min-height:200px; transition: border-color .4s var(--ease), transform .4s var(--ease); }
+  .adv-card:hover{ border-color: var(--ink); transform: translateY(-3px); }
+  .adv-icon{ width:32px; height:32px; border-radius:9px; background: var(--bg-soft); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .adv-card h3{ font-size:15.5px; font-weight:600; font-family:'Manrope',sans-serif; }
+  .adv-card p{ margin:0; color: var(--ink-soft); font-size:13.5px; line-height:1.6; }
+  .adv-stat{ margin-top:auto; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color: var(--ink); display:flex; align-items:center; gap:8px; }
+  .adv-stat::before{ content:''; width:14px; height:1px; background: var(--lime); }
+
+  /* ---------- guarantees ---------- */
+  .guarantee-grid{ display:grid; grid-template-columns: repeat(4,1fr); gap:16px; }
+  .guarantee{ text-align:left; }
+  .guarantee .gnum{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:34px; color: var(--ink); margin-bottom:10px; }
+  .guarantee h3{ font-size:14.5px; margin-bottom:6px; }
+  .guarantee p{ margin:0; color: var(--ink-soft); font-size:13px; line-height:1.6; }
+
+  /* ---------- compare ---------- */
+  .compare-table{ border:1px solid var(--line); border-radius: var(--radius); overflow:hidden; background: var(--card); }
+  .ct-row{ display:grid; grid-template-columns: 1.1fr 1fr 1fr; gap:12px; padding:18px 22px; border-top:1px solid var(--line); align-items:center; transition: background .35s var(--ease), padding-left .35s var(--ease); }
+  .ct-row:first-child{ border-top:none; }
+  .ct-head{ background: var(--bg-soft); }
+  .ct-row:not(.ct-head):hover{ background: var(--bg-soft); padding-left: 28px; }
+  .ct-col-head{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color: var(--ink-dim); }
+  .ct-label{ color: var(--ink-soft); font-size:13.5px; }
+  .ct-good{ color: var(--ink); font-size:14px; font-weight:700; position:relative; padding-left:22px; }
+  .ct-good::before{ content:'✓'; position:absolute; left:0; color:#4a8f3c; }
+  .ct-bad{ color: var(--ink-dim); font-size:13.5px; }
+
+  /* ---------- discord cta ---------- */
+  #discord{ background: linear-gradient(135deg, #5865f2 0%, #444bd1 100%); color:#fff; border-bottom:none; }
+  .discord-box{ display:flex; align-items:center; justify-content:space-between; gap: 32px; flex-wrap:wrap; }
+  .discord-box h2{ color:#fff; font-size: clamp(28px,3.6vw,40px); max-width:18ch; }
+  .discord-box p{ color: #dfe1fb; max-width:48ch; font-size:15.5px; line-height:1.7; margin-top:14px; }
+  .discord-icon{
+    width:56px; height:56px; border-radius:16px; background: rgba(255,255,255,.14); display:flex; align-items:center; justify-content:center;
+    margin-bottom:20px;
+  }
+  .discord-icon svg{ width:30px; height:30px; fill:#fff; }
+  .dc-ico{ width:18px; height:18px; fill:currentColor; flex-shrink:0; }
+  .navcta .dc-ico{ width:15px; height:15px; }
+  body{ -webkit-user-select:none; user-select:none; }
+  .btn-white{ background:#fff; color:#4046c9; }
+  .btn-white:hover{ transform: translateY(-3px); background: var(--lime); color:#1a1a16; }
+
+  /* ---------- outro ---------- */
+  .outro{ text-align:center; padding-top:110px; padding-bottom:110px; }
+  .outro h2{ font-size: clamp(34px,6vw,64px); max-width:20ch; margin:0 auto 20px; }
+  .outro p{ color: var(--ink-soft); font-size:16px; max-width:48ch; margin: 0 auto; line-height:1.7; }
+  .outro-actions{ display:flex; gap:14px; justify-content:center; margin-top: 36px; flex-wrap:wrap; }
+  footer{ padding: 32px; display:flex; align-items:center; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:12px; color: var(--ink-dim); flex-wrap:wrap; gap:12px; }
+  .backtop{ transition: color .3s var(--ease), transform .3s var(--ease); }
+  .backtop:hover{ color: var(--ink); transform: translateY(-2px); }
+
+  @media (max-width: 900px){
+    .principles-grid, .steps, .team-grid, .adv-grid, .guarantee-grid{ grid-template-columns: 1fr 1fr; }
+    .ct-row{ grid-template-columns:1fr; gap:4px; }
+    .ct-col-head:not(:first-child){ margin-top:4px; }
+    .navlinks a:not(.navcta){ display:none; }
+    section{ padding: 84px 0; }
+    .discord-box{ text-align:center; justify-content:center; }
+  }
+  @media (max-width: 620px){
+    .principles-grid, .steps, .team-grid, .adv-grid, .guarantee-grid{ grid-template-columns: 1fr; }
+    .step::after{ display:none; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .reveal, .stagger > *{ opacity:1; transform:none; transition:none; }
+    .marquee-track{ animation:none; }
+    .hero-badge .pip{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="dc-logo" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></symbol>
+</svg>
+
+<nav class="topnav" id="topnav">
+  <a href="#hero" class="mark"><span class="dot"></span>neelux</a>
+  <div class="navlinks">
+    <a href="#work">процесс</a>
+    <a href="#turnkey">под ключ</a>
+    <a href="#team">команда</a>
+    <a href="#advantages">плюсы</a>
+    <a href="#compare">сравнение</a>
+    <a href="https://discord.gg/neelux" target="_blank" rel="noopener" class="navcta"><svg class="dc-ico"><use href="#dc-logo"/></svg>discord</a>
+  </div>
+</nav>
+
+<section class="hero" id="hero">
+  <div class="wrap">
+    <div class="hero-badge reveal"><span class="pip"></span> команда выросла — теперь у нас есть Discord-сервер</div>
+    <h1 class="hero-title reveal">Проекты <span class="accent-word">под ключ</span>. Без агентской возни.</h1>
+    <p class="hero-lede reveal">Neelux — команда, которая берёт задачу целиком: от идеи и дизайна до запуска и поддержки. Один договор, одна команда, один результат — без пересылок между отделами и непрозрачных смет.</p>
+    <div class="hero-actions reveal">
+      <a class="btn btn-primary" href="#turnkey"><span>как проходит проект →</span></a>
+      <a class="btn btn-discord" href="https://discord.gg/neelux" target="_blank" rel="noopener"><svg class="dc-ico"><use href="#dc-logo"/></svg><span>discord-сервер</span></a>
+      <a class="btn btn-ghost" href="https://t.me/xwias" target="_blank" rel="noopener"><span>написать в telegram</span></a>
+    </div>
+    <div class="hero-stats reveal">
+      <div class="hstat"><b>под ключ</b><span>формат работы</span></div>
+      <div class="hstat"><b>1 команда</b><span>без субподряда</span></div>
+      <div class="hstat"><b>24 / 7</b><span>на связи</span></div>
+      <div class="hstat"><b>0%</b><span>скрытых наценок</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="hi">NEELUX</span><span>ДИЗАЙН</span><span>РАЗРАБОТКА</span><span class="hi">ПОД КЛЮЧ</span><span>ЗАПУСК</span><span>ПОДДЕРЖКА</span>
+    <span class="hi">NEELUX</span><span>ДИЗАЙН</span><span>РАЗРАБОТКА</span><span class="hi">ПОД КЛЮЧ</span><span>ЗАПУСК</span><span>ПОДДЕРЖКА</span>
+  </div>
+</div>
+
+<section id="work">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="label">Как мы работаем</span>
+        <h2 class="section-heading" style="margin-top:14px;">Шесть принципов вместо регламента на 40 страниц</h2>
+      </div>
+      <span class="section-idx">01 / 06</span>
+    </div>
+    <p class="section-sub reveal" style="margin-bottom:44px;">Мы не подписываем бриф и не исчезаем на две недели. Работа идёт на виду, шаг за шагом, и в любой момент её можно развернуть в другую сторону.</p>
+
+    <div class="principles-grid stagger reveal">
+      <div class="principle">
+        <span class="num">01</span>
+        <h3>Сначала результат, потом форма</h3>
+        <p>Начинаем не с презентации о процессе, а с рабочей версии — её проще обсуждать, чем слайды о планах.</p>
+      </div>
+      <div class="principle">
+        <span class="num">02</span>
+        <h3>Прогресс виден сразу</h3>
+        <p>Черновик уходит тебе, как только в нём появляется польза, а не в конце спринта.</p>
+      </div>
+      <div class="principle">
+        <span class="num">03</span>
+        <h3>Решения — твои, рутина — нет</h3>
+        <p>Ключевые развилки согласуются с тобой. Всё остальное берёт на себя команда и система.</p>
+      </div>
+      <div class="principle">
+        <span class="num">04</span>
+        <h3>Один канал связи</h3>
+        <p>Без пересылок между отделами и «уточню у коллег». Тот, кто делает работу, — тот, с кем ты общаешься.</p>
+      </div>
+      <div class="principle">
+        <span class="num">05</span>
+        <h3>Правки — часть процесса</h3>
+        <p>Версия обновляется на лету, без новой сметы за каждое изменение.</p>
+      </div>
+      <div class="principle">
+        <span class="num">06</span>
+        <h3>Прозрачная цена времени</h3>
+        <p>Понятно, на что ушли часы — без скрытых наценок «за менеджмент» и «за коммуникацию».</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="turnkey">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="label">Проект под ключ</span>
+        <h2 class="section-heading" style="margin-top:14px; color:#fff;">Приходишь с идеей — уходишь с готовым продуктом</h2>
+      </div>
+      <span class="section-idx" style="color:#7a7a72;">02 / 06</span>
+    </div>
+    <p class="section-sub reveal" style="margin-bottom:44px;">Не нужно самому собирать дизайнера, разработчика и менеджера — команда Neelux закрывает весь путь целиком, одним контуром ответственности.</p>
+
+    <div class="steps stagger reveal">
+      <div class="step">
+        <span class="stepnum">01</span>
+        <h3>Заявка и разбор задачи</h3>
+        <p>Обсуждаем цель, бюджет и сроки в Discord или Telegram — без анкет на 3 страницы.</p>
+      </div>
+      <div class="step">
+        <span class="stepnum">02</span>
+        <h3>Дизайн и прототип</h3>
+        <p>Показываем рабочий черновиКза считаные дни — трогаешь руками, а не смотришь ТЗ.</p>
+      </div>
+      <div class="step">
+        <span class="stepnum">03</span>
+        <h3>Разработка и сборка</h3>
+        <p>Команда доводит проект до продакшена, ты видишь прогресс на каждом шаге.</p>
+      </div>
+      <div class="step">
+        <span class="stepnum">04</span>
+        <h3>Запуск и поддержка</h3>
+        <p>Помогаем с релизом и остаёмся на связи после — доработки входят в сопровождение.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="label">Команда</span>
+        <h2 class="section-heading" style="margin-top:14px;">Мы выросли из «соло» в полноценную команду</h2>
+      </div>
+      <span class="section-idx">03 / 06</span>
+    </div>
+    <p class="section-sub reveal" style="margin-bottom:44px;">Никаких анонимных фрилансеров и джуниоров на обучении. За каждый проект отвечают конкретные льди — их можно найти в нашем Discord.</p>
+
+    <div class="team-grid stagger reveal">
+      <div class="member">
+        <div class="m-avatar mono">n</div>
+        <h3>neerov</h3>
+        <span class="m-role">Основатель · стратегия</span>
+        <p>Ставит задачу, держит контекст, принимает финальные решения по каждому проекту.</p>
+        <div class="m-tags"><span>стратегия</span><span>вкус</span></div>
+      </div>
+      <div class="member">
+        <div class="m-avatar mono">◧</div>
+        <h3>Дизайн-команда</h3>
+        <span class="m-role">UI/UX · брендинг</span>
+        <p>Собирает визуальный язык проекта: от интерфейса до презентаций и соцсетей.</p>
+        <div class="m-tags"><span>интерфейсы</span><span>бренд</span></div>
+      </div>
+      <div class="member">
+        <div class="m-avatar mono">◨</div>
+        <h3>Разработка</h3>
+        <span class="m-role">Frontend · backend</span>
+        <p>Доводит дизайн до рабочего продукта: сайты, боты, интеграции, автоматизация.</p>
+        <div class="m-tags"><span>сайты</span><span>боты</span><span>интеграции</span></div>
+      </div>
+      <div class="member">
+        <div class="m-avatar mono">✦</div>
+        <h3>Neelux AI</h3>
+        <span class="m-role">Система · исполнение</span>
+        <p>Берёт на себя черновики, повторы и рутину — работает без выходных.</p>
+        <div class="m-tags"><span>черновики</span><span>24/7</span></div>
+      </div>
+      <div class="member">
+        <div class="m-avatar mono">◎</div>
+        <h3>Поддержка</h3>
+        <span class="m-role">Сопровождение</span>
+        <p>На связи после запуска — правки, доработки и помощь без новой сметы за звонок.</p>
+        <div class="m-tags"><span>сопровождение</span><span>discord</span></div>
+      </div>
+      <div class="member">
+        <div class="m-avatar mono">＋</div>
+        <h3>Ты в команде?</h3>
+        <span class="m-role">Мы растём</span>
+        <p>Ищем сильных дизайнеров и разработчиков — заявки принимаем прямо в Discord-сервере.</p>
+        <div class="m-tags"><span>наборы</span><span>вакансии</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="advantages">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="label">Наши плюсы</span>
+        <h2 class="section-heading" style="margin-top:14px;">Что реально меняется, когда работаешь с нами</h2>
+      </div>
+      <span class="section-idx">04 / 06</span>
+    </div>
+    <p class="section-sub reveal" style="margin-bottom:44px;">Не общие слова про «клиентоориентированность», а конкретные вещи, которые видно уже на первой итерации.</p>
+
+    <div class="adv-grid stagger reveal">
+      <div class="adv-card">
+        <div class="adv-icon">⚡</div>
+        <h3>Скорость</h3>
+        <p>От идеи до рабочего черновика — дни, а не спринты и очередь на бриф.</p>
+        <div class="adv-stat">первый черновик за 48ч</div>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">◎</div>
+        <h3>Без прослойки</h3>
+        <p>Ты общаешься с командой напрямую, а не с менеджером проекта.</p>
+        <div class="adv-stat">0 посредников</div>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">↻</div>
+        <h3>Гибкость</h3>
+        <p>Меняем направление на люq�ом шаге — без нового брифа и пересогласований.</p>
+        <div class="adv-stat">в люq�ой момент</div>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">▤</div>
+        <h3>Прозрачность</h3>
+        <p>Видно сам процесс в Discord, а не только финальную презентацию.</p>
+        <div class="adv-stat">открытый процесс</div>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">✦</div>
+        <h3>Единый стиль</h3>
+        <p>Один визуальный язык в каждом материале — команда следит за этим сама.</p>
+        <div class="adv-stat">1 система</div>
+      </div>
+      <div class="adv-card">
+        <div class="adv-icon">◐</div>
+        <h3>Доступность</h3>
+        <p>На связи вне привычных рамок «рабочих часов агентства».</p>
+        <div class="adv-stat">24 / 7</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="guarantees">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="label">Гарантии</span>
+        <h2 class="section-heading" style="margin-top:14px;">Мы отвечаем за то, что обещаем</h2>
+      </div>
+      <span class="section-idx">05 / 06</span>
+    </div>
+    <p class="section-sub reveal" style="margin-bottom:44px;">Работаем по договору и фиксируем условия заранее — никаких «мы так не договаривались» после старта.</p>
+
+    <div class="guarantee-grid stagger reveal">
+      <div class="guarantee">
+        <div class="gnum mono">01</div>
+        <h3>Договор и сроки</h3>
+        <p>Фиксируем объём, сроки и стоимость до старта работ.</p>
+      </div>
+      <div class="guarantee">
+        <div class="gnum mono">02</div>
+        <h3>Бесплатные правки</h3>
+        <p>Правки в рамках согласованного объёма не тарифицируются отдельно.</p>
+      </div>
+      <div class="guarantee">
+        <div class="gnum mono">03</div>
+        <h3>Поддержка после запуска</h3>
+        <p>Остаёмся на связи и помогаем с доработками уже после релиза.</p>
+      </div>
+      <div class="guarantee">
+        <div class="gnum mono">04</div>
+        <h3>Возврат при срыве</h3>
+        <p>Если команда срывает согласованные сроки по своей вине — возвращаем часть оплаты.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="label">Сравнение</span>
+        <h2 class="section-heading" style="margin-top:14px;">Neelux рядом с привычным подходом</h2>
+      </div>
+      <span class="section-idx">06 / 06</span>
+    </div>
+    <p class="section-sub reveal" style="margin-bottom:44px;">Без имён конкретных агентств — просто то, как обычно устроен процесс, и как устроен он у нас.</p>
+
+    <div class="compare-table stagger reveal">
+      <div class="ct-row ct-head">
+        <span></span>
+        <span class="ct-col-head" style="color:var(--ink);">Neelux</span>
+        <span class="ct-col-head">Обычное агентство</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-label">Старт работы</span>
+        <span class="ct-good">в тот же день</span>
+        <span class="ct-bad">после брифа и созвонов</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-label">Формат</span>
+        <span class="ct-good">проект под ключ</span>
+        <span class="ct-bad">разбит на подрядчиков</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-label">Стоимость правки</span>
+        <span class="ct-good">включена в проект</span>
+        <span class="ct-bad">отдельная смета</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-label">Скорость черновика</span>
+        <span class="ct-good">дни</span>
+        <span class="ct-bad">недели</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-label">Кто делает работу</span>
+        <span class="ct-good">команда, которую видно</span>
+        <span class="ct-bad">исполнитель без лица</span>
+      </div>
+      <div class="ct-row">
+        <span class="ct-label">Доступность</span>
+        <span class="ct-good">discord, здесь и сейчас</span>
+        <span class="ct-bad">рабочие часы агентства</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="discord">
+  <div class="wrap">
+    <div class="discord-box reveal">
+      <div>
+        <div class="discord-icon"><svg><use href="#dc-logo"/></svg></div>
+        <h2>Присоединяйся к нашему Discord-серверу</h2>
+        <p>Общайся с командой напрямую, следи за прогрессом проектов, узнавай о наборе в команду и получай апдейты первым.</p>
+      </div>
+      <a class="btn btn-white" href="https://discord.gg/neelux" target="_blank" rel="noopener"><span>войти на сервер ↗</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="outro" id="outro">
+  <div class="wrap">
+    <span class="label reveal" style="justify-content:center;">Итог</span>
+    <h2 class="reveal" style="margin-top:18px;">Не агентство. <span class="accent-word">Команда под ключ.</span></h2>
+    <p class="reveal">Приходишь с задачей — уходишь с готовым результатом. Если это ближе, чем очередной бриф, — просто напиши.</p>
+    <div class="outro-actions reveal">
+      <a class="btn btn-primary" href="https://t.me/xwias" target="_blank" rel="noopener"><span>написать в telegram →</span></a>
+      <a class="btn btn-discord" href="https://discord.gg/neelux" target="_blank" rel="noopener"><svg class="dc-ico"><use href="#dc-logo"/></svg><span>discord-сервер</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© neelux · 2026</span>
+  <a class="backtop" href="#hero">наверх ↑</a>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('dragstart', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    var k = (e.key || '').toLowerCase();
+    var mod = e.ctrlKey || e.metaKey;
+    if (k === 'f12' ||
+        (mod && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) ||
+        (e.metaKey && e.altKey && (k === 'i' || k === 'j' || k === 'c')) ||
+        (mod && (k === 'u' || k === 's'))){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+  var nav = document.getElementById('topnav');
+  window.addEventListener('scroll', function(){
+    nav.classList.toggle('scrolled', window.scrollY > 8);
+  });
+
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in-view'); });
+  }
+})();
+</script>
+</body>
+</html>
