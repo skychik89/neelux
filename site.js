@@ -125,6 +125,8 @@ function catMin(cat){ return grpMin(cat, DIR[cat].minGrp); }
 function pkgSum(p){ return p.items.reduce(function(a, k){ return a + BY[k].price; }, 0); }
 function plural(n, a, b, c){ var m = n % 10, h = n % 100; return (m === 1 && h !== 11) ? a : (m >= 2 && m <= 4 && (h < 12 || h > 14)) ? b : c; }
 function clamp(v, a, b){ return Math.min(Math.max(v, a), b); }
+/* старый Safari (iOS 13 и ниже) знает только addListener */
+function onMQ(mq, fn){ if (mq.addEventListener) mq.addEventListener('change', fn); else mq.addListener(fn); }
 var toastT;
 function toast(msg){ var t = $('#toast'); t.textContent = msg; t.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(function(){ t.classList.remove('is-on'); }, 2600); }
 function copy(text){
@@ -155,7 +157,7 @@ function setMenu(open){ document.body.classList.toggle('menu-open', open); burge
 burger.addEventListener('click', function(){ setMenu(!document.body.classList.contains('menu-open')); });
 $$('#mmenu a').forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
 document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && document.body.classList.contains('menu-open')) { setMenu(false); burger.focus(); } });
-window.matchMedia('(min-width: 1081px)').addEventListener('change', function(e){ if (e.matches) setMenu(false); });
+onMQ(window.matchMedia('(min-width: 1081px)'), function(e){ if (e.matches) setMenu(false); });
 
 /* ---------- ротатор слов в заголовке ---------- */
 var rot = $('#rot'), words = $$('.rot-w', rot), wi = 0, rotT = null;
@@ -210,7 +212,8 @@ $('.demo-tabs').addEventListener('keydown', function(e){
 });
 playBtn.addEventListener('click', function(){ userPaused = !userPaused; syncPlay(); });
 if (fine) { $('#demoStage').addEventListener('mouseenter', function(){ hoverPause = true; }); $('#demoStage').addEventListener('mouseleave', function(){ hoverPause = false; }); }
-demo.addEventListener('focusin', function(){ hoverPause = true; });
+/* пауза только при фокусе с клавиатуры: после клика или тапа по вкладке автопрокрутка продолжается */
+demo.addEventListener('focusin', function(e){ var kb = true; try { kb = e.target.matches(':focus-visible'); } catch(err){} if (kb) hoverPause = true; });
 demo.addEventListener('focusout', function(e){ if (!demo.contains(e.relatedTarget)) hoverPause = false; });
 if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ inView = es[0].isIntersecting; }, { threshold:.25 }).observe(demo);
 setScene(0); syncPlay();
@@ -272,12 +275,14 @@ function renderCalcMain(){
   if (!list.some(function(s){ return s.id === calc.main; })) calc.main = list[0].id;
   $('#cMain').innerHTML = list.map(function(s){ return '<div class="opt"><input type="radio" name="cmain" id="cm-' + s.id + '" value="' + s.id + '"' + (calc.main === s.id ? ' checked' : '') + '><label for="cm-' + s.id + '"><b>' + esc(s.name) + '</b><small>' + priceTxt(s) + '</small></label></div>'; }).join('');
 }
+/* добавка конфликтует с основной услугой: это она же или они взаимоисключающие (например, фирменный стиль уже включает логотип) */
+function clash(k){ return k === calc.main || EXCLUSIVE.some(function(g){ return g.indexOf(k) > -1 && g.indexOf(calc.main) > -1; }); }
 function renderCalcAdds(){
-  delete calc.adds[calc.main];
-  $('#cAdds').innerHTML = CALC_ADDONS.filter(function(k){ return k !== calc.main; }).map(function(k){ var s = BY[k]; return '<label class="add"><input type="checkbox" value="' + k + '"' + (calc.adds[k] ? ' checked' : '') + '><span>' + esc(s.name) + '</span><em>' + priceTxt(s) + '</em></label>'; }).join('');
+  Object.keys(calc.adds).forEach(function(k){ if (clash(k)) delete calc.adds[k]; });
+  $('#cAdds').innerHTML = CALC_ADDONS.filter(function(k){ return !clash(k); }).map(function(k){ var s = BY[k]; return '<label class="add"><input type="checkbox" value="' + k + '"' + (calc.adds[k] ? ' checked' : '') + '><span>' + esc(s.name) + '</span><em>' + priceTxt(s) + '</em></label>'; }).join('');
 }
 function calcState(){
-  var ids = [calc.main].concat(Object.keys(calc.adds).filter(function(k){ return calc.adds[k] && k !== calc.main; }));
+  var ids = [calc.main].concat(Object.keys(calc.adds).filter(function(k){ return calc.adds[k] && !clash(k); }));
   var once = 0, mo = 0, cx = false, from = false;
   ids.forEach(function(k){ var s = BY[k]; if (s.unit) mo += s.price; else { once += s.price; if (isFrom(s)) from = true; } if (s.cx) cx = true; });
   return { ids:ids, once:once, mo:mo, cx:cx, from:from };
@@ -387,7 +392,8 @@ if ('IntersectionObserver' in window && !reduced) {
 } else $$('.rv').forEach(function(el){ el.classList.add('in'); });
 
 /* активный пункт меню */
-var navMap = { services:'services', projects:'projects', pricing:'pricing', calc:'calc', process:'calc', faq:'faq', contact:'faq' };
+/* разделы без своего пункта меню (этапы, заявка) снимают подсветку */
+var navMap = { top:'', services:'services', projects:'projects', pricing:'pricing', calc:'calc', process:'', faq:'faq', contact:'' };
 if ('IntersectionObserver' in window) {
   var nio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { var k = navMap[e.target.id]; $$('.nav a').forEach(function(a){ a.classList.toggle('is-active', a.dataset.nav === k); }); } }); }, { rootMargin:'-45% 0px -50% 0px' });
   Object.keys(navMap).forEach(function(id){ var el = document.getElementById(id); if (el) nio.observe(el); });
@@ -436,7 +442,7 @@ function onScroll(){
 }
 window.addEventListener('scroll', function(){ if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive:true });
 window.addEventListener('resize', onScroll);
-stackMQ.addEventListener('change', function(){ applyStack(); onScroll(); });
+onMQ(stackMQ, function(){ applyStack(); onScroll(); });
 applyStack(); onScroll();
 
 /* ---------- магнитные кнопки (только мышь) ---------- */

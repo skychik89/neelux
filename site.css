@@ -516,14 +516,18 @@ details[open]>.svc-groups,details[open]>.ans{animation:open-in .5s var(--ease) b
 .contact-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,480px);gap:clamp(32px,6vw,96px);align-items:start}
 .contact .h2{font-size:clamp(38px,5.4vw,76px)}
 .contacts{margin-top:36px;display:grid;gap:8px;max-width:440px}
-.contacts li{display:flex;align-items:center;gap:8px}
-.contacts a{flex:1;display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--r);border:1px solid var(--line);background:rgba(10,11,13,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:border-color .4s var(--ease),background .4s var(--ease),transform .5s var(--ease)}
-.contacts a:hover{border-color:var(--line-2);background:rgba(20,22,26,.8);transform:translateX(4px)}
+.contacts li{display:flex;align-items:center;gap:4px;border-radius:var(--r);border:1px solid var(--line);background:rgba(10,11,13,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:border-color .4s var(--ease),background .4s var(--ease)}
+.contacts li:hover{border-color:var(--line-2);background:rgba(20,22,26,.8)}
+.contacts a{flex:1;display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:inherit}
+.contacts a:focus-visible{outline-offset:-2px}
+.contacts a .ic{transition:transform .5s var(--ease)}
+.contacts a:hover .ic{transform:scale(1.06)}
 .contacts a b{display:block;font-weight:500}
 .contacts a small{display:block;color:var(--muted);font-size:13px}
 .contacts .ic{width:42px;height:42px;border-radius:12px}
-.copy{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;border:1px solid var(--line);color:var(--muted);transition:color .3s,border-color .3s,background .3s}
-.copy:hover{color:var(--text);border-color:var(--line-2);background:rgba(255,255,255,.04)}
+.copy{display:grid;place-items:center;flex:none;width:44px;height:44px;margin-right:6px;border-radius:12px;color:var(--muted);transition:color .3s,background .3s}
+.copy:hover{color:var(--text);background:rgba(255,255,255,.07)}
+.copy .i{width:18px;height:18px}
 .form-card{position:relative;padding:clamp(24px,3vw,36px);border-radius:var(--r-xl);border:1px solid var(--line-2);background:rgba(14,16,19,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 40px 100px -40px rgba(0,0,0,.9)}
 .form-card h3{font-size:24px;font-weight:600;letter-spacing:-.03em;margin-bottom:18px}
 .field{display:grid;gap:7px;margin-bottom:14px}
@@ -677,3 +681,6 @@ details[open]>.svc-groups,details[open]>.ans{animation:open-in .5s var(--ease) b
 .contact-copy,.contact-grid>*{min-width:0}.contacts li,.contacts a{min-width:0;overflow-wrap:anywhere}
 @media (max-width:1000px){.contact-grid{grid-template-columns:minmax(0,1fr)}}
 .h2,.sec-head h2{overflow-wrap:anywhere}@media (max-width:380px){.h2{font-size:clamp(26px,8.2vw,32px)}}
+
+/* ---------- тост над мобильной панелью «Обсудить проект» ---------- */
+@media (max-width:760px){.toast{bottom:calc(92px + env(safe-area-inset-bottom));max-width:calc(100% - 32px);text-align:center}}
