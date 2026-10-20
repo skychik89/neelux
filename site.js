@@ -89,11 +89,33 @@ const PACKAGES = [
 ];
 const CALC_ADDONS = ['map_one','map_both','map_care','logo','brand','social','pricelist','creatives','reels','api','ai_site','analytics','seo','hosting','mailing','ads','support'];
 const EXCLUSIVE = [['map_one','map_both'],['logo','brand']];
+/* как добавки калькулятора сгруппированы на экране */
+const ADDON_GROUPS = [
+  { name:'Карты', items:['map_one','map_both','map_care'] },
+  { name:'Дизайн и контент', items:['logo','brand','social','pricelist','creatives','reels'] },
+  { name:'Продвижение', items:['ads','mailing','seo','analytics'] },
+  { name:'Техническое и AI', items:['api','ai_site','hosting'] },
+  { name:'Поддержка', items:['support'] }
+];
 
 /* Автоотправка заявок на свой сервер. Пусто — выключено (открывается чат @xwias с готовым текстом).
    Токены бота сюда НЕ вставлять: endpoint сам пересылает заявку в Telegram на стороне сервера. */
 const LEAD_ENDPOINT = '';
 const TG_USER = 'xwias';
+
+/* Яндекс Метрика. Пусто — выключено. Впишите номер счётчика, например '12345678'.
+   Цели (создайте их в Метрике как «JavaScript-событие» с такими идентификаторами):
+   cta_discuss, lead_submit, calc_send, calc_share, calc_pdf, tg_click, tg_quick, pkg_select, demo_tab, concept_click */
+const METRIKA_ID = '';
+
+/* Быстрые сообщения: кнопка открывает чат @xwias с готовой фразой */
+const QUICK_MSGS = [
+  { label:'Хочу сайт',       text:'Здравствуйте! Хочу сайт для своего бизнеса. Подскажете по цене и срокам?' },
+  { label:'Хочу бота',       text:'Здравствуйте! Нужен Telegram-бот (запись, заявки или каталог). Подскажете, с чего начать?' },
+  { label:'Нужны карты',     text:'Здравствуйте! Хочу оформить карточку в Яндекс Картах и 2ГИС. Сколько стоит?' },
+  { label:'AI-ассистент',    text:'Здравствуйте! Интересует AI-ассистент для бизнеса. Можно обсудить?' },
+  { label:'Выбрать пакет',   text:'Здравствуйте! Хочу подобрать пакет «под ключ». Помогите выбрать.' }
+];
 
 /* Демонстрация на первом экране: длительность сцен (мс) и подписи */
 const DEMO = {
@@ -136,6 +158,24 @@ function copy(text){
 }
 function store(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch(e){ return null; } }
 function go(sel){ var el = typeof sel === 'string' ? $(sel) : sel; if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block:'start' }); }
+
+/* ---------- Яндекс Метрика и цели (работает, только если задан METRIKA_ID) ---------- */
+function goal(name){ try { if (METRIKA_ID && typeof window.ym === 'function') window.ym(+METRIKA_ID, 'reachGoal', name); } catch(e){} }
+if (METRIKA_ID) {
+  (function(m, e, t, r, i){ m[i] = m[i] || function(){ (m[i].a = m[i].a || []).push(arguments); }; m[i].l = 1 * new Date();
+    var k = e.createElement(t), a = e.getElementsByTagName(t)[0]; k.async = 1; k.src = r; a.parentNode.insertBefore(k, a); })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+  window.ym(+METRIKA_ID, 'init', { clickmap:true, trackLinks:true, accurateTrackBounce:true });
+}
+document.addEventListener('click', function(e){
+  var a = e.target.closest('a,button'); if (!a) return;
+  var href = a.getAttribute('href') || '';
+  if (a.dataset.quick) goal('tg_quick');
+  else if (href.indexOf('https://t.me/') === 0) goal('tg_click');
+  if (href === '#contact') goal('cta_discuss');
+  if (a.dataset.pkg) goal('pkg_select');
+  if (a.dataset.concept) goal('concept_click');
+  if (a.classList.contains('dt')) goal('demo_tab');
+}, true);
 
 /* ---------- самопроверка конфига ---------- */
 SERVICES.forEach(function(s){ console.assert(DIR[s.cat], 'Нет направления у ' + s.id); });
@@ -267,19 +307,43 @@ $('#pkgs').innerHTML = PACKAGES.map(function(p, i){
 }).join('');
 
 /* ---------- калькулятор ---------- */
-var calc = { cat:'web', main:'landing', adds:{} };
+var CALC_DEFAULT = { cat:'web', main:'landing' };
+var calc = { cat:CALC_DEFAULT.cat, main:CALC_DEFAULT.main, adds:{} };
+var calcAddSet = []; ADDON_GROUPS.forEach(function(g){ calcAddSet = calcAddSet.concat(g.items); });
+console.assert(CALC_ADDONS.every(function(k){ return calcAddSet.indexOf(k) > -1; }), 'Калькулятор: добавка без группы в ADDON_GROUPS');
 function mains(cat){ return visible(cat).filter(function(s){ return !s.unit; }); }
-function renderCalcCats(){ $('#cCats').innerHTML = DIRS.map(function(d){ return '<div class="opt"><input type="radio" name="ccat" id="cc-' + d.id + '" value="' + d.id + '"' + (calc.cat === d.id ? ' checked' : '') + '><label for="cc-' + d.id + '"><b>' + esc(d.short) + '</b><small>от ' + money(catMin(d.id)) + '</small></label></div>'; }).join(''); }
-function renderCalcMain(){
-  var list = mains(calc.cat);
-  if (!list.some(function(s){ return s.id === calc.main; })) calc.main = list[0].id;
-  $('#cMain').innerHTML = list.map(function(s){ return '<div class="opt"><input type="radio" name="cmain" id="cm-' + s.id + '" value="' + s.id + '"' + (calc.main === s.id ? ' checked' : '') + '><label for="cm-' + s.id + '"><b>' + esc(s.name) + '</b><small>' + priceTxt(s) + '</small></label></div>'; }).join('');
+function renderCalcCats(){
+  $('#cCats').innerHTML = DIRS.map(function(d){
+    return '<div class="dp"><input type="radio" name="ccat" id="cc-' + d.id + '" value="' + d.id + '"' + (calc.cat === d.id ? ' checked' : '') + '>' +
+      '<label for="cc-' + d.id + '"><img src="' + d.img + '-800.webp" alt="" width="80" height="60" loading="lazy" decoding="async"><b>' + esc(d.short) + '</b><small>от ' + money(catMin(d.id)) + '</small></label></div>';
+  }).join('');
 }
-/* добавка конфликтует с основной услугой: это она же или они взаимоисключающие (например, фирменный стиль уже включает логотип) */
+var calcGrp = '';
+function renderCalcMain(){
+  var list = mains(calc.cat), grps = [];
+  if (!list.some(function(s){ return s.id === calc.main; })) calc.main = list[0].id;
+  list.forEach(function(s){ if (grps.indexOf(s.grp) < 0) grps.push(s.grp); });
+  if (grps.indexOf(calcGrp) < 0) calcGrp = BY[calc.main].grp;
+  var tabs = grps.length > 1 ? '<div class="mp-tabs" role="group" aria-label="Подгруппа услуг">' + grps.map(function(g){
+    return '<button type="button" class="mp-tab" data-grp="' + esc(g) + '" aria-pressed="' + (g === calcGrp) + '">' + esc(g) + (g === BY[calc.main].grp ? '<i aria-hidden="true"></i>' : '') + '</button>';
+  }).join('') + '</div>' : '';
+  $('#cMain').innerHTML = tabs + '<div class="mp-list">' + list.filter(function(s){ return s.grp === calcGrp; }).map(function(s){
+    return '<div class="mp"><input type="radio" name="cmain" id="cm-' + s.id + '" value="' + s.id + '"' + (calc.main === s.id ? ' checked' : '') + '>' +
+      '<label for="cm-' + s.id + '"><span class="mp-top"><b>' + esc(s.name) + '</b><em>' + priceTxt(s) + '</em></span><small>' + esc(s.d) + '</small>' + (s.cx ? '<i class="mp-cx">расчёт после созвона</i>' : '') + '</label></div>';
+  }).join('') + '</div>';
+}/* добавка конфликтует с основной услугой: это она же или они взаимоисключающие (например, фирменный стиль уже включает логотип) */
 function clash(k){ return k === calc.main || EXCLUSIVE.some(function(g){ return g.indexOf(k) > -1 && g.indexOf(calc.main) > -1; }); }
 function renderCalcAdds(){
-  Object.keys(calc.adds).forEach(function(k){ if (clash(k)) delete calc.adds[k]; });
-  $('#cAdds').innerHTML = CALC_ADDONS.filter(function(k){ return !clash(k); }).map(function(k){ var s = BY[k]; return '<label class="add"><input type="checkbox" value="' + k + '"' + (calc.adds[k] ? ' checked' : '') + '><span>' + esc(s.name) + '</span><em>' + priceTxt(s) + '</em></label>'; }).join('');
+  Object.keys(calc.adds).forEach(function(k){ if (!calc.adds[k] || clash(k)) delete calc.adds[k]; });
+  $('#cAdds').innerHTML = ADDON_GROUPS.map(function(g){
+    var items = g.items.filter(function(k){ return CALC_ADDONS.indexOf(k) > -1 && !clash(k); });
+    if (!items.length) return '';
+    return '<div class="ag"><p class="mp-h">' + esc(g.name) + '</p><div class="ag-list">' + items.map(function(k){ var s = BY[k];
+      return '<label class="chipc"><input type="checkbox" value="' + k + '"' + (calc.adds[k] ? ' checked' : '') + '><span><i class="chk" aria-hidden="true"></i>' + esc(s.name) + '<em>' + priceTxt(s) + '</em></span></label>';
+    }).join('') + '</div></div>';
+  }).join('');
+  var n = Object.keys(calc.adds).length, cnt = $('#cAddCount');
+  cnt.hidden = !n; cnt.textContent = n ? 'выбрано: ' + n : '';
 }
 function calcState(){
   var ids = [calc.main].concat(Object.keys(calc.adds).filter(function(k){ return calc.adds[k] && !clash(k); }));
@@ -287,6 +351,15 @@ function calcState(){
   ids.forEach(function(k){ var s = BY[k]; if (s.unit) mo += s.price; else { once += s.price; if (isFrom(s)) from = true; } if (s.cx) cx = true; });
   return { ids:ids, once:once, mo:mo, cx:cx, from:from };
 }
+function bestPackage(st){
+  var best = null;
+  PACKAGES.forEach(function(p){
+    var covers = st.ids.filter(function(k){ return !BY[k].unit; }).every(function(k){ return p.items.indexOf(k) > -1 || (k === 'map_one' && p.items.indexOf('map_both') > -1) || (k === 'logo' && p.items.indexOf('brand') > -1); });
+    if (covers && st.once >= p.price && (!best || p.price < best.price)) best = p;
+  });
+  return best;
+}
+function sumText(st){ return (st.from ? 'от' + NB : '') + money(st.once); }
 var sumShown = 0, sumRaf = null;
 function animateSum(to, prefix){
   var el = $('#cSum'), from = sumShown, t0 = performance.now(), d = reduced ? 0 : 600;
@@ -296,27 +369,69 @@ function animateSum(to, prefix){
 function renderCalcRes(){
   var st = calcState();
   animateSum(st.once, st.from ? 'от' + NB : '');
+  $('#cBarSum').textContent = sumText(st) + (st.mo ? ' + ' + money(st.mo) + '/мес' : '');
   var mo = $('#cMo'); mo.hidden = !st.mo; mo.textContent = '+ ' + money(st.mo) + ' в месяц';
-  $('#cList').innerHTML = st.ids.map(function(k){ var s = BY[k]; return '<li><span>' + esc(s.name) + '</span><span>' + priceTxt(s) + '</span></li>'; }).join('');
+  $('#cList').innerHTML = st.ids.map(function(k, i){ var s = BY[k];
+    return '<li><span class="cl-n">' + esc(s.name) + (i ? '' : '<i>основа</i>') + '</span><span class="cl-p">' + priceTxt(s) + '</span>' +
+      (i ? '<button type="button" class="cl-x" data-rm="' + k + '" aria-label="Убрать: ' + esc(s.name) + '">' + icon('i-x') + '</button>' : '<span class="cl-x" aria-hidden="true"></span>') + '</li>';
+  }).join('');
   $('#cWarn').innerHTML = (st.cx ? '<b>Индивидуальный расчёт.</b> В составе есть сложная система — точную цену назовём после короткого созвона. ' : '<b>Это ориентир.</b> ') + 'На стоимость влияют: ' + esc(DIR[BY[calc.main].cat].grows) + '.';
-  var tip = $('#cTip'), best = null;
-  PACKAGES.forEach(function(p){
-    var covers = st.ids.filter(function(k){ return !BY[k].unit; }).every(function(k){ return p.items.indexOf(k) > -1 || (k === 'map_one' && p.items.indexOf('map_both') > -1) || (k === 'logo' && p.items.indexOf('brand') > -1); });
-    if (covers && st.once >= p.price && (!best || p.price < best.price)) best = p;
-  });
+  var tip = $('#cTip'), best = bestPackage(st);
   tip.hidden = !best;
-  if (best) tip.innerHTML = 'Пакет «' + esc(best.name) + '» за ' + money(best.price) + ' включает всё это и больше. <a href="#pricing">Смотреть пакеты</a>';
+  if (best) tip.innerHTML = '<p><b>Выгоднее пакетом.</b> «' + esc(best.name) + '» за ' + money(best.price) + ' включает всё это и больше' +
+    (st.once > best.price ? ' — дешевле на ' + money(st.once - best.price) : '') + '.</p><a class="btn btn-ghost btn-sm" href="#contact" data-pkg="' + best.id + '">Выбрать пакет' + icon('i-arr') + '</a>';
 }
 function renderCalc(){ renderCalcCats(); renderCalcMain(); renderCalcAdds(); renderCalcRes(); }
 $('#cCats').addEventListener('change', function(e){ calc.cat = e.target.value; renderCalcMain(); renderCalcAdds(); renderCalcRes(); });
-$('#cMain').addEventListener('change', function(e){ calc.main = e.target.value; renderCalcAdds(); renderCalcRes(); });
+$('#cMain').addEventListener('change', function(e){ calc.main = e.target.value; calcGrp = BY[calc.main].grp; $$('.mp-tab', $('#cMain')).forEach(function(t){ var i = t.querySelector('i'); if (i) i.remove(); if (t.dataset.grp === calcGrp) t.insertAdjacentHTML('beforeend', '<i aria-hidden="true"></i>'); }); renderCalcAdds(); renderCalcRes(); });
+$('#cMain').addEventListener('click', function(e){ var t = e.target.closest('.mp-tab'); if (!t) return; calcGrp = t.dataset.grp; renderCalcMain(); var nt = $('#cMain .mp-tab[data-grp="' + calcGrp + '"]'); if (nt) nt.focus({ preventScroll:true }); });
 $('#cAdds').addEventListener('change', function(e){
-  var k = e.target.value; calc.adds[k] = e.target.checked;
-  if (e.target.checked) EXCLUSIVE.forEach(function(g){ if (g.indexOf(k) > -1) g.forEach(function(o){ if (o !== k && calc.adds[o]) { calc.adds[o] = false; var el = $('#cAdds input[value="' + o + '"]'); if (el) el.checked = false; } }); });
-  renderCalcRes();
+  var k = e.target.value;
+  if (e.target.checked) { calc.adds[k] = true; EXCLUSIVE.forEach(function(g){ if (g.indexOf(k) > -1) g.forEach(function(o){ if (o !== k) delete calc.adds[o]; }); }); }
+  else delete calc.adds[k];
+  renderCalcAdds(); renderCalcRes();
+  var el = $('#cAdds input[value="' + k + '"]'); if (el) el.focus({ preventScroll:true });
 });
+$('#cList').addEventListener('click', function(e){
+  var b = e.target.closest('[data-rm]'); if (!b) return;
+  delete calc.adds[b.dataset.rm]; renderCalcAdds(); renderCalcRes();
+  var next = $('#cList [data-rm]') || $('#cSend'); next.focus({ preventScroll:true });
+});
+$('#cReset').addEventListener('click', function(){ calc = { cat:CALC_DEFAULT.cat, main:CALC_DEFAULT.main, adds:{} }; calcGrp = ''; renderCalc(); toast('Расчёт сброшен'); });
+$('#cBarGo').addEventListener('click', function(){ go('#calcRes'); });
+
+/* ссылка на расчёт: #calc=направление.основа.добавка1,добавка2 — только коды услуг, без личных данных */
+function calcHash(){ return 'calc=' + calc.cat + '.' + calc.main + '.' + Object.keys(calc.adds).join(','); }
+function readCalcHash(){
+  var m = location.hash.match(/^#calc=([a-z_]+)\.([a-z_0-9]+)\.?([a-z_0-9,]*)$/); if (!m || !DIR[m[1]] || !BY[m[2]] || BY[m[2]].cat !== m[1] || BY[m[2]].unit) return false;
+  calc = { cat:m[1], main:m[2], adds:{} };
+  (m[3] ? m[3].split(',') : []).forEach(function(k){ if (CALC_ADDONS.indexOf(k) > -1) calc.adds[k] = true; });
+  return true;
+}
+var fromLink = readCalcHash();
 renderCalc();
+if (fromLink) setTimeout(function(){ go('#calc'); toast('Открыт сохранённый расчёт'); }, 300);
+$('#cShare').addEventListener('click', function(){
+  var url = location.origin + location.pathname + '#' + calcHash();
+  copy(url).then(function(ok){ toast(ok ? 'Ссылка на расчёт скопирована' : 'Не удалось скопировать ссылку'); });
+  goal('calc_share');
+});
 function calcSummary(){ var st = calcState(); return st.ids.map(function(k){ return BY[k].name + ' (' + priceTxt(BY[k]) + ')'; }).join(', ') + ' — итого ' + (st.from ? 'от ' : '') + money(st.once) + (st.mo ? ' + ' + money(st.mo) + '/мес' : ''); }
+
+/* печать / PDF: отдельный лист с расчётом */
+function fillPrint(){
+  var st = calcState(), d = new Date();
+  $('#printSheet').innerHTML = '<div class="ps-head"><span class="lg"></span><b>Neelux</b><span>neelux.space · t.me/xwias</span></div>' +
+    '<h1>Предварительный расчёт</h1><p class="ps-date">' + d.toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' }) + ' · направление: ' + esc(DIR[calc.cat].name) + '</p>' +
+    '<table><tbody>' + st.ids.map(function(k){ var s = BY[k]; return '<tr><td>' + esc(s.name) + '<small>' + esc(s.d) + '</small></td><td>' + priceTxt(s) + '</td></tr>'; }).join('') + '</tbody>' +
+    '<tfoot><tr><td>Итого разово</td><td>' + sumText(st) + '</td></tr>' + (st.mo ? '<tr><td>Ежемесячно</td><td>' + money(st.mo) + '/мес</td></tr>' : '') + '</tfoot></table>' +
+    '<p class="ps-note">' + $('#cWarn').textContent + '</p>' +
+    '<p class="ps-note">Расчёт ориентировочный: итоговую стоимость и сроки называем до начала работ. Открыть этот расчёт на сайте: ' + esc(location.origin + location.pathname + '#' + calcHash()) + '</p>' +
+    '<p class="ps-foot">Обсудить проект: Telegram @xwias · каталог услуг @neelux_bot</p>';
+}
+window.addEventListener('beforeprint', fillPrint);
+$('#cPdf').addEventListener('click', function(){ fillPrint(); goal('calc_pdf'); document.body.classList.add('print-calc'); window.print(); });
+window.addEventListener('afterprint', function(){ document.body.classList.remove('print-calc'); });
 
 /* ---------- связи: кнопки → форма / калькулятор ---------- */
 var typeSel = $('#fType');
@@ -330,12 +445,15 @@ document.addEventListener('click', function(e){
   if (a.dataset.copy) { copy(a.dataset.copy).then(function(ok){ toast(ok ? 'Скопировано: ' + a.dataset.copy : 'Не удалось скопировать'); }); return; }
   if (a.dataset.pick) typeSel.value = a.dataset.pick;
   if (a.dataset.pkg) typeSel.value = 'pkg:' + a.dataset.pkg;
-  if (a.dataset.calc) { var s = BY[a.dataset.calc]; calc.cat = s.cat; calc.main = s.id; renderCalc(); }
-  if (a.dataset.dircalc) { calc.cat = a.dataset.dircalc; renderCalc(); }
+  if (a.dataset.calc) { var s = BY[a.dataset.calc]; calc.cat = s.cat; calc.main = s.id; calcGrp = ''; renderCalc(); }
+  if (a.dataset.dircalc) { calc.cat = a.dataset.dircalc; calcGrp = ''; renderCalc(); }
 });
 function attachCalc(txt){ var box = $('#fCalc'); box.hidden = !txt; box.dataset.v = txt || ''; $('#fCalcTxt').innerHTML = txt ? '<b>Расчёт:</b> ' + esc(txt) : ''; }
 $('#fCalcDel').addEventListener('click', function(){ attachCalc(''); });
-$('#cSend').addEventListener('click', function(){ attachCalc(calcSummary()); typeSel.value = calc.main; go('#contact'); setTimeout(function(){ $('#fName').focus({ preventScroll:true }); }, reduced ? 0 : 900); });
+$('#cSend').addEventListener('click', function(){ goal('calc_send'); attachCalc(calcSummary()); typeSel.value = calc.main; go('#contact'); setTimeout(function(){ $('#fName').focus({ preventScroll:true }); }, reduced ? 0 : 900); });
+
+/* ---------- быстрые сообщения в Telegram ---------- */
+$('#quickTg').innerHTML = QUICK_MSGS.map(function(q){ return '<a class="qchip" href="https://t.me/' + TG_USER + '?text=' + encodeURIComponent(q.text) + '" target="_blank" rel="noopener" data-quick="1">' + icon('i-tg') + esc(q.label) + '</a>'; }).join('');
 
 /* ---------- форма ---------- */
 var form = $('#form'), done = $('#done');
@@ -372,7 +490,7 @@ form.addEventListener('submit', function(e){
   var text = leadText(), lastTs = Number(store('neelux-lead-ts') || 0);
   if (Date.now() - lastTs < 30000) { toast(store('neelux-lead-last') === text ? 'Эта заявка уже отправлена — проверьте Telegram' : 'Подождите полминуты перед повторной отправкой'); return; }
   store('neelux-lead-ts', String(Date.now())); store('neelux-lead-last', text);
-  copy(text);
+  copy(text); goal('lead_submit');
   if (!LEAD_ENDPOINT) { openTg(text); finish(); return; }
   var btn = $('#fSubmit'), lbl = $('span', btn); btn.disabled = true; lbl.textContent = 'Отправляем…';
   var ctl = 'AbortController' in window ? new AbortController() : null, to = setTimeout(function(){ if (ctl) ctl.abort(); }, 8000);
@@ -393,14 +511,14 @@ if ('IntersectionObserver' in window && !reduced) {
 
 /* активный пункт меню */
 /* разделы без своего пункта меню (этапы, заявка) снимают подсветку */
-var navMap = { top:'', services:'services', projects:'projects', pricing:'pricing', calc:'calc', process:'', faq:'faq', contact:'' };
+var navMap = { top:'', services:'services', projects:'projects', concepts:'', pricing:'pricing', calc:'calc', process:'', faq:'faq', contact:'' };
 if ('IntersectionObserver' in window) {
   var nio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { var k = navMap[e.target.id]; $$('.nav a').forEach(function(a){ a.classList.toggle('is-active', a.dataset.nav === k); }); } }); }, { rootMargin:'-45% 0px -50% 0px' });
   Object.keys(navMap).forEach(function(id){ var el = document.getElementById(id); if (el) nio.observe(el); });
 }
 
 /* ---------- прокрутка: прогресс, демо, направления, стопка проектов, шаги ---------- */
-var hdr = $('#hdr'), prog = $('#progress'), mbar = $('#mbar'), heroImg = $('.hero-bg img'), dirList = $('#dirList'), dirNavOl = $('#dirNav');
+var calcSec = $('#calc'), hdr = $('#hdr'), prog = $('#progress'), mbar = $('#mbar'), heroImg = $('.hero-bg img'), dirList = $('#dirList'), dirNavOl = $('#dirNav');
 var steps = $('#steps'), stepEls = $$('.step'), projs = $$('.proj'), figs = $$('.dir-fig');
 var wideMQ = window.matchMedia('(min-width: 901px)'), stackMQ = window.matchMedia('(min-width: 1081px) and (min-height: 700px)');
 function rich(){ return wideMQ.matches && !reduced; }
@@ -417,7 +535,8 @@ function onScroll(){
   var y = scrollY, vh = innerHeight, h = document.documentElement.scrollHeight - vh;
   prog.style.transform = 'scaleX(' + (h > 0 ? y / h : 0) + ')';
   hdr.classList.toggle('is-solid', y > 10);
-  mbar.classList.toggle('is-on', y > vh * .7 && $('#contact').getBoundingClientRect().top > vh * .5);
+  var cr = calcSec.getBoundingClientRect(), inCalc = cr.top < vh * .6 && cr.bottom > vh * .4;
+  mbar.classList.toggle('is-on', y > vh * .7 && !inCalc && $('#contact').getBoundingClientRect().top > vh * .5);
   if (rich()) {
     var hp = clamp(y / (vh * .7), 0, 1);
     demo.style.setProperty('--tilt', (7 * (1 - hp)).toFixed(2) + 'deg');
@@ -445,6 +564,18 @@ window.addEventListener('resize', onScroll);
 onMQ(stackMQ, function(){ applyStack(); onScroll(); });
 applyStack(); onScroll();
 
+/* ---------- концепты: глубина прокрутки макета и автопрокрутка на сенсорных экранах ---------- */
+var cxs = $$('.cx-grid > .cx');
+function fitConcept(cx){ var v = $('.cx-view', cx), pg = $('.cx-page', cx); $('.cx-frame', cx).style.setProperty('--shift', Math.max(0, pg.scrollHeight - v.clientHeight)); }
+function fitConcepts(){ cxs.forEach(fitConcept); }
+cxs.forEach(function(cx){ var f = $('.cx-frame', cx); f.addEventListener('mouseenter', function(){ fitConcept(cx); }); f.addEventListener('focus', function(){ fitConcept(cx); }); });
+if ('ResizeObserver' in window) { var cro = new ResizeObserver(function(es){ es.forEach(function(e){ fitConcept(e.target.closest('.cx')); }); }); cxs.forEach(function(cx){ cro.observe($('.cx-page', cx)); cro.observe($('.cx-view', cx)); }); }
+fitConcepts(); window.addEventListener('load', fitConcepts); window.addEventListener('resize', fitConcepts);
+$$('.cx-page img').forEach(function(img){ img.addEventListener('load', fitConcepts); });
+if (!fine && !reduced && 'IntersectionObserver' in window) {
+  var cio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) fitConcept(e.target); e.target.classList.toggle('is-play', e.isIntersecting); }); }, { threshold:.6 });
+  cxs.forEach(function(cx){ cio.observe(cx); });
+}
 /* ---------- магнитные кнопки (только мышь) ---------- */
 if (fine && !reduced) $$('.magnet').forEach(function(b){
   b.addEventListener('pointermove', function(e){ var r = b.getBoundingClientRect(); b.style.transform = 'translate(' + ((e.clientX - r.left - r.width / 2) * .18).toFixed(1) + 'px,' + ((e.clientY - r.top - r.height / 2) * .28).toFixed(1) + 'px)'; });
