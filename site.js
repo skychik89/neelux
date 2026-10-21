@@ -266,18 +266,17 @@ function svcRow(s, sup){
     (s.cx ? '<p class="cx">Объём таких проектов сильно различается — итог назовём после короткого обсуждения.</p>' : '') +
     '<div class="acts"><a class="btn btn-ghost btn-sm" href="#contact" data-pick="' + s.id + '">Обсудить</a>' + (s.unit ? '' : '<a class="btn btn-ghost btn-sm" href="#calc" data-calc="' + s.id + '">Посчитать</a>') + '</div></div>';
 }
-$('#dirNav').innerHTML = DIRS.map(function(d, i){ return '<li><a href="#dir-' + d.id + '" data-i="' + i + '"><span>0' + (i + 1) + '</span>' + esc(d.name) + '</a></li>'; }).join('');
+$('#dirNav').innerHTML = DIRS.map(function(d, i){ return '<li><a href="#dir-' + d.id + '" data-i="' + i + '"><span>0' + (i + 1) + '</span>' + esc(d.name).replace('-', '-\u2060') + '</a></li>'; }).join('');
 $('#dirList').innerHTML = DIRS.map(function(d, i){
   var list = visible(d.id).filter(function(s){ return s.grp !== 'Поддержка'; }), grps = [];
   list.forEach(function(s){ if (grps.indexOf(s.grp) < 0) grps.push(s.grp); });
   var n = list.length + d.support.length;
   return '<article class="dir rv" id="dir-' + d.id + '" aria-labelledby="dirh-' + d.id + '">' +
-    '<figure class="dir-fig"><span class="dir-num">0' + (i + 1) + ' / 04</span>' +
-      '<img src="' + d.img + '-1200.webp" srcset="' + d.img + '-800.webp 800w, ' + d.img + '-1200.webp 1200w" sizes="(max-width: 1080px) 92vw, 820px" alt="" width="1200" height="900" loading="lazy" decoding="async"></figure>' +
-    '<div class="dir-body"><h3 id="dirh-' + d.id + '">' + esc(d.name) + '</h3><p class="dir-desc">' + esc(d.desc) + '</p>' +
+    '<div class="dir-head"><span class="dir-num">0' + (i + 1) + '</span><h3 id="dirh-' + d.id + '">' + esc(d.name).replace('-', '-\u2060') + '</h3><p class="dir-price">от <b>' + money(catMin(d.id)) + '</b></p></div>' +
+    '<div class="dir-body"><p class="dir-desc">' + esc(d.desc) + '</p>' +
       '<ul class="dir-pts">' + d.pts.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>' +
       (d.warn ? '<p class="dir-warn">' + esc(d.warn) + '</p>' : '') +
-      '<div class="dir-foot"><p class="dir-price">от<b>' + money(catMin(d.id)) + '</b></p>' +
+      '<div class="dir-foot">' +
         '<a class="btn btn-accent btn-sm" href="#contact" data-pick="dir:' + d.id + '">Обсудить' + icon('i-arr') + '</a>' +
         '<a class="btn btn-ghost btn-sm" href="#calc" data-dircalc="' + d.id + '">Посчитать</a></div>' +
       '<details class="dir-more"><summary><span>Все услуги и цены<small>' + n + ' ' + plural(n, 'позиция', 'позиции', 'позиций') + '</small></span><span class="pm">' + icon('i-plus') + '</span></summary>' +
@@ -315,7 +314,7 @@ function mains(cat){ return visible(cat).filter(function(s){ return !s.unit; });
 function renderCalcCats(){
   $('#cCats').innerHTML = DIRS.map(function(d){
     return '<div class="dp"><input type="radio" name="ccat" id="cc-' + d.id + '" value="' + d.id + '"' + (calc.cat === d.id ? ' checked' : '') + '>' +
-      '<label for="cc-' + d.id + '"><img src="' + d.img + '-800.webp" alt="" width="80" height="60" loading="lazy" decoding="async"><b>' + esc(d.short) + '</b><small>от ' + money(catMin(d.id)) + '</small></label></div>';
+      '<label for="cc-' + d.id + '"><span class="dp-n" aria-hidden="true">0' + (DIRS.indexOf(d) + 1) + '</span><b>' + esc(d.short) + '</b><small>от ' + money(catMin(d.id)) + '</small></label></div>';
   }).join('');
 }
 var calcGrp = '';
