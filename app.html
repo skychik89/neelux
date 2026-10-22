@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex">
+<title>Neelux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&display=swap">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#f2f1ec;--card:#fff;--ink:#151a21;--mute:#6b7280;--lime:#d6ff3f;--line:#e4e2da;--r:20px;--tab:68px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Geologica,system-ui,sans-serif}
+body{padding-bottom:calc(var(--tab) + env(safe-area-inset-bottom) + 12px);overflow-x:hidden}
+h1,h2,h3{margin:0;line-height:1.12;letter-spacing:-.02em}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+.page{display:none;padding:18px 16px 8px;animation:in .35s ease both}
+.page.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hero{background:var(--ink);color:#fff;border-radius:28px;padding:22px 20px 0;position:relative;overflow:hidden;min-height:340px}
+.hero h1{font-size:30px;max-width:11em}.hero h1 em{font-style:normal;background:var(--lime);color:var(--ink);padding:0 .22em;border-radius:.3em}
+.hero p{color:#b9c0c9;margin:12px 0 18px;max-width:17em}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:999px;background:var(--lime);color:var(--ink);font-weight:600}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.block{width:100%}
+.slot{position:relative;display:flex;align-items:flex-end;justify-content:center}
+.slot img{display:block;width:100%;height:auto;object-fit:contain}
+.slot.empty{border-radius:18px}
+body.dev .slot.empty{outline:2px dashed #9aa3af;background:rgba(214,255,63,.15)}
+body.dev .slot.empty::after{content:attr(data-name);position:absolute;inset:auto 0 8px;text-align:center;font-size:12px;color:#6b7280}
+.hero .slot{position:absolute;right:-6px;bottom:0;width:48%;min-height:200px}
+.sec{margin:26px 0 12px;font-size:22px}
+.card{background:var(--card);border-radius:var(--r);padding:16px;border:1px solid var(--line);margin-bottom:12px}
+.card h3{font-size:18px}.muted{color:var(--mute);font-size:13px}
+.price{font-size:26px;font-weight:700;margin:8px 0}.price s{font-size:14px;color:var(--mute);font-weight:400;margin-left:6px}
+.pkg.hit{border:2px solid var(--ink)}.pkg ul{margin:10px 0 14px;padding-left:18px}.pkg li{margin:3px 0}
+.badge{display:inline-block;background:var(--lime);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;margin-left:6px;vertical-align:middle}
+.mini-slot{width:96px;height:96px;float:right;margin:-6px -4px 6px 8px}
+.row{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}.row .t{flex:1}.row b{display:block}
+.chk{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;flex:none;transition:.15s}
+.row.on .chk{background:var(--ink);border-color:var(--ink)}.row.on .chk::after{content:"✓";color:var(--lime);font-size:15px}
+.sum{position:sticky;bottom:calc(var(--tab) + env(safe-area-inset-bottom) + 10px);background:var(--ink);color:#fff;border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-top:14px;z-index:5}
+.sum .v{font-size:22px;font-weight:700;flex:1}.sum .v small{display:block;font-size:12px;color:#aab2bd;font-weight:400}
+.tabs{position:fixed;left:0;right:0;bottom:0;height:calc(var(--tab) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;z-index:10}
+.tabs button{flex:1;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;color:var(--mute)}
+.tabs button i{font-style:normal;font-size:21px}.tabs button.on{color:var(--ink);font-weight:600}.tabs button.on i{background:var(--lime);border-radius:12px;padding:0 12px}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input,textarea{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;font:inherit;background:#fff;color:var(--ink);outline:0}
+input:focus,textarea:focus{border-color:var(--ink)}textarea{min-height:96px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:9px 14px;border-radius:999px;background:#fff;border:1.5px solid var(--line);font-size:14px}.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.stars{display:flex;gap:6px;font-size:34px}.stars button{background:none;filter:grayscale(1);opacity:.45}.stars button.on{filter:none;opacity:1}
+.note{background:#fff8d6;border-radius:14px;padding:11px 13px;font-size:13px;margin:12px 0}
+.order-slot{width:150px;margin:0 auto 6px}.err{color:#c0392b;font-size:13px;margin-top:6px;min-height:1em}
+.fade{height:20px}
+</style>
+</head>
+<body>
+<main>
+<!-- ГЛАВНАЯ -->
+<section class="page on" id="p-home">
+  <div class="hero">
+    <h1>Сайт, бот и заявки — <em>под ключ</em></h1>
+    <p>Пакеты от 19 900 ₽. Первый черновик — за несколько часов.</p>
+    <button class="btn" data-go="order">Оставить заявку →</button>
+    <div class="slot" data-slot="hero" data-name="маскот: приветствие"></div>
+  </div>
+  <h2 class="sec">Что делаем</h2>
+  <div class="card"><b>🌐 Сайты и лендинги</b><div class="muted">визитки, лендинги, магазины</div></div>
+  <div class="card"><b>🤖 Telegram-боты</b><div class="muted">запись 24/7, заявки, оплата, рассылки</div></div>
+  <div class="card"><b>📍 Карты, 🎨 дизайн, 📈 реклама</b><div class="muted">Яндекс Карты и 2ГИС, фирменный стиль, Reels</div></div>
+  <button class="btn block" data-go="calc">🧮 Посчитать свой набор</button>
+  <p class="muted" style="text-align:center;margin-top:12px">Цены ориентировочные — точную сумму согласуем после обсуждения.</p>
+</section>
+
+<!-- ПАКЕТЫ -->
+<section class="page" id="p-pkgs">
+  <h2 style="font-size:26px">Пакеты</h2>
+  <p class="muted">Готовые решения дешевле, чем те же услуги по отдельности.</p>
+  <div id="pkgList"></div>
+</section>
+
+<!-- КАЛЬКУЛЯТОР -->
+<section class="page" id="p-calc">
+  <h2 style="font-size:26px">Калькулятор</h2>
+  <p class="muted">Отмечай нужное — внизу будет сумма.</p>
+  <div class="slot" data-slot="calc" data-name="маскот: считает" style="width:140px;margin:0 0 -6px auto"></div>
+  <div class="card" id="calcList" style="padding:6px 16px"></div>
+  <div class="sum"><div class="v" id="calcSum">0 ₽<small id="calcHint">ничего не выбрано</small></div><button class="btn" id="calcGo" disabled>Заказать</button></div>
+</section>
+
+<!-- РАБОТЫ -->
+<section class="page" id="p-works">
+  <h2 style="font-size:26px">Наши работы</h2>
+  <div id="worksList" style="margin-top:12px"></div>
+  <div class="slot" data-slot="works" data-name="маскот: работы" style="width:150px;margin:0 auto"></div>
+  <h2 class="sec">Отзывы</h2>
+  <div class="card"><div class="muted">Читай, что говорят клиенты, или оставь свой отзыв.</div>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button class="btn ghost" id="rvRead">Читать в боте</button><button class="btn" id="rvWrite">Оставить отзыв</button></div></div>
+  <div class="card" id="rvForm" style="display:none">
+    <h3>Твоя оценка</h3><div class="stars" id="stars"></div>
+    <label>Пара слов (необязательно)</label><textarea id="rvText" maxlength="600" placeholder="Что понравилось?"></textarea>
+    <div class="err" id="rvErr"></div><button class="btn block" id="rvSend" style="margin-top:8px">Отправить отзыв</button>
+  </div>
+</section>
+
+<!-- ЗАЯВКА -->
+<section class="page" id="p-order">
+  <div class="slot" data-slot="order" data-name="маскот: заявка" style="width:150px;margin:0 auto -6px"></div>
+  <h2 style="font-size:26px;text-align:center">Заявка</h2>
+  <p class="muted" style="text-align:center">Займёт минуту. Дмитрий ответит лично.</p>
+  <label>Что нужно?</label>
+  <div class="chips" id="what"></div>
+  <div class="note" id="whatNote" style="display:none"></div>
+  <label>Опиши задачу</label>
+  <textarea id="task" maxlength="900" placeholder="Например: студия маникюра, нужен сайт и бот записи"></textarea>
+  <label>Бюджет</label>
+  <div class="chips" id="bud"></div>
+  <label>Как связаться?</label>
+  <input id="contact" placeholder="@username, телефон или e-mail" autocomplete="off">
+  <div class="err" id="err"></div>
+  <button class="btn block" id="send" style="margin-top:10px">Отправить заявку</button>
+  <p class="muted" style="text-align:center;margin-top:10px">Промокод и скидка друга применяются автоматически — введи промокод в боте: «🎁 Скидки».</p>
+</section>
+<div class="fade"></div>
+</main>
+
+<nav class="tabs">
+  <button class="on" data-go="home"><i>🏠</i>Главная</button>
+  <button data-go="pkgs"><i>📦</i>Пакеты</button>
+  <button data-go="calc"><i>🧮</i>Расчёт</button>
+  <button data-go="works"><i>💼</i>Работы</button>
+  <button data-go="order"><i>📝</i>Заявка</button>
+</nav>
+
+<script>
+const D = {"addons": [{"id": "card", "title": "Сайт-визитка", "price": "от 9 900 ₽", "amount": 9900, "desc": "Быстрый старт для мастера, кабинета или эксперта"}, {"id": "landing", "title": "Лендинг", "price": "от 16 900 ₽", "amount": 16900, "desc": "Продающая страница под услугу, курс или акцию"}, {"id": "multi", "title": "Многостраничный сайт", "price": "от 29 900 ₽", "amount": 29900, "desc": "Несколько разделов для бизнеса с разными услугами"}, {"id": "bot_card", "title": "Бот-визитка", "price": "от 8 900 ₽", "amount": 8900, "desc": "Прайс, портфолио и ответы на вопросы в Telegram"}, {"id": "bot_lead", "title": "Бот онлайн-записи и заявок", "price": "от 14 900 ₽", "amount": 14900, "desc": "Запись 24/7 и сбор заявок без переписок: услуга, мастер, время, напоминания, база клиентов и рассылки"}, {"id": "bot_pay", "title": "Бот с оплатой и интеграциями", "price": "от 24 900 ₽", "amount": 24900, "desc": "Воронка продаж, оплаты, курсы или магазин в боте, связка с CRM и таблицами"}, {"id": "map_one", "title": "Яндекс Карты или 2ГИС", "price": "7 900 ₽", "amount": 7900, "desc": "Создание или проверка и оформление одной площадки"}, {"id": "map_both", "title": "Яндекс Карты + 2ГИС", "price": "12 900 ₽", "amount": 12900, "desc": "Обе площадки под ключ с едиными данными"}, {"id": "logo", "title": "Логотип", "price": "от 3 900 ₽", "amount": 3900, "desc": "Знак, который узнают: несколько концепций, правки, файлы для веба и печати"}, {"id": "brand", "title": "Фирменный стиль", "price": "от 12 900 ₽", "amount": 12900, "desc": "Логотип, цвета, шрифты и носители"}, {"id": "social", "title": "Оформление соцсетей", "price": "от 6 900 ₽", "amount": 6900, "desc": "Упаковка профиля Instagram или ВК"}, {"id": "pricelist", "title": "Прайс-лист, сертификаты, гайды", "price": "2 500 ₽", "amount": 2500, "desc": "Печатные и цифровые материалы в вашем стиле"}, {"id": "reels", "title": "Монтаж Reels / Shorts", "price": "1 500 ₽", "amount": 1500, "desc": "1 ролик — 1 500 ₽; 5 шт. — 6 500 ₽; 10 шт. — 11 900 ₽"}, {"id": "mailing", "title": "Рассылка по базе в Telegram", "price": "3 500 ₽", "amount": 3500, "desc": "Продающая рассылка, чтобы закрыть пустые окна"}, {"id": "ads", "title": "Настройка рекламы", "price": "от 9 900 ₽", "amount": 9900, "desc": "Запуск трафика; рекламный бюджет оплачивается отдельно"}, {"id": "support", "title": "Сопровождение", "price": "5 000 ₽/мес", "amount": 5000, "desc": "Правки цен, акций и дат, мониторинг, ежемесячная рассылка"}], "excl": [["map_one", "map_both"], ["logo", "brand"], ["card", "landing", "multi"], ["bot_card", "bot_lead", "bot_pay"]], "pkgs": [{"id": "start", "emoji": "🚀", "name": "Быстрый старт", "price": 19900, "worth": 32700, "save": 12800, "for": "Частным мастерам и небольшим кабинетам", "features": ["Сайт-визитка с услугами, прайсом и портфолио", "Telegram-бот онлайн-записи 24/7", "Оформление Яндекс Карт или 2ГИС", "Кнопки быстрой связи и записи"], "gift": "", "hit": false}, {"id": "business", "emoji": "🏢", "name": "Студия под ключ", "price": 39900, "worth": 54100, "save": 14200, "for": "Салонам, студиям и локальному бизнесу", "features": ["Продающий лендинг", "Бот записи: мастера, напоминания, рассылки", "Оформление Яндекс Карт и 2ГИС", "Прайс-листы, сертификаты и оформление соцсетей"], "gift": "", "hit": true}, {"id": "full", "emoji": "💎", "name": "Полный масштаб", "price": 80000, "worth": 120300, "save": 40300, "for": "Бизнесу, которому нужно всё и сразу", "features": ["Многостраничный сайт", "Бот с воронкой и оплатами", "Яндекс Карты и 2ГИС под ключ", "Фирменный стиль, соцсети и полиграфия", "10 роликов Reels/Shorts", "Настройка рекламы (бюджет отдельно)"], "gift": "1 месяц сопровождения в подарок", "hit": false}], "works": [{"t": "Room Nails", "d": "Первый коммерческий заказ — Telegram-бот онлайн-записи для студии маникюра: выбор услуг, даты и времени, напоминания, личные записи клиентов, галерея работ, интерьер, карты и админка мастера с расписанием и рассылками."}, {"t": "SD Shine", "d": "Бренд гель-лаков — делаем рекламные Reels: монтаж под ритм, титры, музыка, формат 9:16 для Instagram, TikTok и Telegram."}]};
+const tg = window.Telegram && Telegram.WebApp;
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const money = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " ₽";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor("#f2f1ec"); tg.setBackgroundColor("#f2f1ec"); } catch (e) {} }
+if (/[?&]dev\b/.test(location.search)) document.body.classList.add("dev");
+const hap = k => { try { tg.HapticFeedback.impactOccurred(k || "light"); } catch (e) {} };
+
+/* --- слоты маскотов: если файла app-mascot-<имя>.webp нет, место просто остаётся пустым --- */
+$$(".slot").forEach(s => {
+  const img = new Image(); img.alt = ""; img.decoding = "async";
+  img.onload = () => { s.appendChild(img); };
+  img.onerror = () => s.classList.add("empty");
+  img.src = "app-mascot-" + s.dataset.slot + ".webp";
+  if (s.dataset.slot === "hero") s.style.minHeight = "200px";
+});
+
+/* --- навигация --- */
+const state = { page: "home", pkg: null, items: [], budget: "Не знаю — обсудим", stars: 0 };
+function go(p) {
+  state.page = p;
+  $$(".page").forEach(e => e.classList.toggle("on", e.id === "p-" + p));
+  $$(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.go === p));
+  scrollTo({ top: 0 }); hap();
+  if (tg) { p === "home" ? tg.BackButton.hide() : tg.BackButton.show(); }
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); });
+if (tg) tg.BackButton.onClick(() => go("home"));
+
+/* --- пакеты --- */
+$("#pkgList").innerHTML = D.pkgs.map(p => `
+  <div class="card pkg ${p.hit ? "hit" : ""}">
+    <div class="slot mini-slot" data-slot="pkg-${p.id}" data-name="маскот"></div>
+    <h3>${p.emoji} ${esc(p.name)}${p.hit ? '<span class="badge">хит</span>' : ""}</h3>
+    <div class="muted">${esc(p.for)}</div>
+    <div class="price">${money(p.price)}<s>${money(p.worth)}</s></div>
+    <ul>${p.features.map(f => `<li>${esc(f)}</li>`).join("")}</ul>
+    ${p.gift ? `<div class="note">🎁 ${esc(p.gift)}</div>` : ""}
+    <div class="muted" style="margin-bottom:10px">Экономия ${money(p.save)}</div>
+    <button class="btn block" data-pkg="${p.id}">Заказать пакет</button>
+  </div>`).join("");
+$$("#pkgList .slot").forEach(s => {
+  const img = new Image(); img.onload = () => s.appendChild(img); img.onerror = () => s.classList.add("empty");
+  img.src = "app-mascot-" + s.dataset.slot + ".webp";
+});
+$("#pkgList").addEventListener("click", e => { const b = e.target.closest("[data-pkg]"); if (b) { pickPkg(b.dataset.pkg); go("order"); } });
+
+/* --- калькулятор --- */
+function calcRender() {
+  $("#calcList").innerHTML = D.addons.map(a => `
+    <div class="row ${state.items.includes(a.id) ? "on" : ""}" data-id="${a.id}">
+      <div class="t"><b>${esc(a.title)}</b><span class="muted">${esc(a.price)}</span></div><div class="chk"></div></div>`).join("");
+  const total = state.items.reduce((s, id) => s + D.addons.find(a => a.id === id).amount, 0);
+  $("#calcSum").firstChild.nodeValue = money(total);
+  let hint = state.items.length ? "ориентировочно · " + state.items.length + " поз." : "ничего не выбрано";
+  for (const p of D.pkgs) { /* подсказка про пакет */ }
+  $("#calcHint").textContent = hint; $("#calcGo").disabled = !state.items.length;
+}
+$("#calcList").addEventListener("click", e => {
+  const r = e.target.closest(".row"); if (!r) return; const id = r.dataset.id;
+  if (state.items.includes(id)) state.items = state.items.filter(x => x !== id);
+  else { D.excl.forEach(g => { if (g.includes(id)) state.items = state.items.filter(x => !g.includes(x)); }); state.items.push(id); }
+  hap(); calcRender();
+});
+$("#calcGo").onclick = () => { state.pkg = null; syncWhat(); go("order"); };
+calcRender();
+
+/* --- работы --- */
+$("#worksList").innerHTML = D.works.map(w => `<div class="card"><h3>${esc(w.t)}</h3><p class="muted" style="font-size:14px;margin:6px 0 0">${esc(w.d)}</p></div>`).join("");
+$("#rvRead").onclick = () => { const u = "https://t.me/neelux_bot?start=reviews"; tg ? tg.openTelegramLink(u) : open(u); };
+$("#rvWrite").onclick = () => { $("#rvForm").style.display = "block"; $("#rvForm").scrollIntoView({ behavior: "smooth" }); };
+$("#stars").innerHTML = [1, 2, 3, 4, 5].map(n => `<button data-n="${n}">⭐</button>`).join("");
+$("#stars").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; state.stars = +b.dataset.n; $$("#stars button").forEach(x => x.classList.toggle("on", +x.dataset.n <= state.stars)); hap(); });
+$("#rvSend").onclick = () => {
+  if (!state.stars) { $("#rvErr").textContent = "Выбери оценку"; return; }
+  send({ t: "review", stars: state.stars, text: $("#rvText").value.trim() });
+};
+
+/* --- заявка --- */
+const WHAT = [["", "🤷 Не знаю"], ...D.pkgs.map(p => [p.id, p.emoji + " " + p.name])];
+$("#what").innerHTML = WHAT.map(([id, t]) => `<button class="chip" data-w="${id}">${esc(t)}</button>`).join("") + '<button class="chip" data-w="calc">🧮 Свой набор</button>';
+function syncWhat() {
+  $$("#what .chip").forEach(c => c.classList.toggle("on", c.dataset.w === "calc" ? !state.pkg && state.items.length > 0 : (c.dataset.w || null) === (state.pkg || (state.items.length ? "__x" : null))));
+  const n = $("#whatNote");
+  if (state.pkg) { const p = D.pkgs.find(x => x.id === state.pkg); n.style.display = "block"; n.textContent = p.emoji + " " + p.name + " — " + money(p.price); }
+  else if (state.items.length) { const t = state.items.reduce((s, id) => s + D.addons.find(a => a.id === id).amount, 0); n.style.display = "block"; n.textContent = "🧮 Свой набор: " + state.items.length + " поз., ориентир " + money(t); }
+  else n.style.display = "none";
+}
+function pickPkg(id) { state.pkg = id || null; if (id) state.items = []; calcRender(); syncWhat(); }
+$("#what").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return; const w = c.dataset.w;
+  if (w === "calc") { go("calc"); return; }
+  pickPkg(w || null); if (!w) { state.items = []; calcRender(); syncWhat(); } hap();
+});
+const BUD = ["до 20 000 ₽", "20 000 – 40 000 ₽", "40 000 – 80 000 ₽", "от 80 000 ₽", "Не знаю — обсудим"];
+$("#bud").innerHTML = BUD.map(b => `<button class="chip ${b === state.budget ? "on" : ""}">${b}</button>`).join("");
+$("#bud").addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; state.budget = c.textContent; $$("#bud .chip").forEach(x => x.classList.toggle("on", x === c)); hap(); });
+const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+if (u && u.username) $("#contact").value = "@" + u.username;
+syncWhat();
+
+function validContact(t) { t = t.trim(); return (t[0] === "@" && t.length >= 4) || (t.match(/\d/g) || []).length >= 7 || /.+@.+\..+/.test(t) || t.includes("t.me/"); }
+function send(payload) {
+  if (!tg || !tg.sendData) { alert("Открой приложение кнопкой «🚀 Приложение» внизу чата с ботом."); return; }
+  try { tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+  tg.sendData(JSON.stringify(payload));
+}
+$("#send").onclick = () => {
+  const contact = $("#contact").value.trim();
+  if (!validContact(contact)) { $("#err").textContent = "Нужен контакт: @username, телефон или e-mail"; $("#contact").focus(); return; }
+  $("#err").textContent = "";
+  send({ t: "order", pkg: state.pkg, items: state.pkg ? [] : state.items, task: $("#task").value.trim() || "—", budget: state.budget, contact });
+};
+</script>
+</body>
+</html>
