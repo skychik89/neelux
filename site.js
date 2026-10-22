@@ -575,6 +575,19 @@ if (!fine && !reduced && 'IntersectionObserver' in window) {
   var cio = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) fitConcept(e.target); e.target.classList.toggle('is-play', e.isIntersecting); }); }, { threshold:.6 });
   cxs.forEach(function(cx){ cio.observe(cx); });
 }
+/* ---------- маскот-ролики: играют только на экране; при «уменьшенной анимации» и экономии трафика — неподвижный кадр ---------- */
+var mVids = $$('video[data-mascot]');
+var saveData = navigator.connection && navigator.connection.saveData;
+if (reduced || saveData) mVids.forEach(function(v){ v.removeAttribute('autoplay'); v.preload = 'none'; });
+else if ('IntersectionObserver' in window) {
+  var vio = new IntersectionObserver(function(es){ es.forEach(function(e){
+    var v = e.target;
+    if (e.isIntersecting) { if (v.preload !== 'auto') v.preload = 'auto'; v.playbackRate = 0.85; var pr = v.play(); if (pr && pr.catch) pr.catch(function(){}); }
+    else v.pause();
+  }); }, { rootMargin:'200px 0px' });
+  mVids.forEach(function(v){ vio.observe(v); });
+  document.addEventListener('visibilitychange', function(){ mVids.forEach(function(v){ if (document.hidden) v.pause(); }); });
+}
 /* ---------- магнитные кнопки (только мышь) ---------- */
 if (fine && !reduced) $$('.magnet').forEach(function(b){
   b.addEventListener('pointermove', function(e){ var r = b.getBoundingClientRect(); b.style.transform = 'translate(' + ((e.clientX - r.left - r.width / 2) * .18).toFixed(1) + 'px,' + ((e.clientY - r.top - r.height / 2) * .28).toFixed(1) + 'px)'; });

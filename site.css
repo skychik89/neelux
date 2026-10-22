@@ -1184,3 +1184,45 @@ details[open]>summary .pm{background:var(--lime);border-color:var(--lime);color:
 .steps-head{position:static;margin-bottom:clamp(2rem,4vw,3.5rem)}
 @media (min-width:1024px){.steps{margin-left:calc(15rem + 3.5rem)}}
 .h2,.hero-title{overflow-wrap:normal;word-break:normal;hyphens:manual}
+
+/* ---------- маскот-ролики (21.10.2026) ----------
+   Ролики сняты на белом фоне: multiply убирает белый на светлой подложке.
+   Над тёмными блоками ролик не перекрывает их — иначе персонаж растворится в тёмном. */
+.m-vid{display:block;width:100%;height:auto;aspect-ratio:1;mix-blend-mode:multiply;background:transparent}
+.hero-mascot:has(.m-vid),.calc-mascot:has(.m-vid){margin-bottom:.5rem}
+/* ролики Gemini показываются как есть — без дополнительного парения */
+.m-vid{animation:none!important;transform:none}
+.hero-mascot:has(.m-vid)::after{animation:none}
+.hero-mascot:has(.m-vid)::after{bottom:4%}
+.hero-mascot:has(.m-vid){width:min(100%,25rem)}
+.calc-mascot:has(.m-vid){width:12rem;margin-left:0}
+@media (max-width:760px){.hero-mascot:has(.m-vid){width:min(80%,17rem);margin:1rem 0 .5rem}}
+/* наложение работает, только если предки не изолируют группу: убираем изоляцию и переносим multiply на нужный уровень */
+.hero{isolation:auto}
+.m-vid{mix-blend-mode:normal}
+.hero-mascot:has(.m-vid),.calc-mascot:has(.m-vid),.contact-mascot:has(.m-vid){mix-blend-mode:multiply}
+.dir-nav:has(.m-vid){mix-blend-mode:multiply}
+@media (min-width:1081px){
+  .calc-side:has(.m-vid){position:relative;top:auto;align-self:stretch;display:block}
+  .calc-side:has(.m-vid) .calc-res{position:sticky;top:calc(var(--hdr) + 1.5rem)}
+}
+
+/* ---------- раскладка маскотов (21.10.2026, правки Димы) ---------- */
+/* только анимация Gemini: без своего появления, тени и покачивания */
+.js .is-ready .hero-mascot.intro,.js .hero-mascot.intro{animation:none;opacity:1}
+.hero-mascot::after{content:none}
+.hero-mascot img,.dir-mascot img,.calc-mascot img,.contact-mascot img{animation:none!important}
+/* первый экран: стоит ногами на верхнем крае тёмного блока (ступни на 88% высоты кадра) */
+.hero-mascot:has(.m-vid){margin-bottom:0;transform:translateY(11.6%)}
+/* заявка: сидит на верхнем крае формы и ничего не закрывает */
+.form-card>.contact-mascot{position:absolute;top:auto;bottom:calc(100% - .45rem);right:1.25rem;left:auto;width:8.75rem;margin:0;display:block;pointer-events:none}
+@media (max-width:1080px){.form-card>.contact-mascot{width:7.5rem}.form-card:has(.contact-mascot){margin-top:8rem}}
+.contact{isolation:auto}
+
+/* ---------- фикс белой подложки у маскотов (21.10.2026) ----------
+   Пока родитель .rv появляется (opacity/transform), он изолирует группу, и multiply не видит фон страницы:
+   ролик (снят на белом) секунду показывается белым квадратом. Прячем ролик, пока идёт появление блока. */
+@media (prefers-reduced-motion:no-preference){
+  .js .rv .m-vid{opacity:0;transition:opacity .5s ease 1.4s}
+  .js .rv.in .m-vid{opacity:1}
+}

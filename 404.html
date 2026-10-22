@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=Unbounded:wght@500;600&family=Playfair+Display:ital,wght@1,500&display=swap">
-<link rel="stylesheet" href="/site.css?v=20261021">
+<link rel="stylesheet" href="/site.css?v=20261021d">
 <style>
   .nf{min-height:100vh;min-height:100svh;display:grid;place-items:center;text-align:center;padding:6rem clamp(1rem,4vw,2.5rem) 4rem}
   .nf-brand{position:absolute;top:1.25rem;left:clamp(1rem,4vw,2.5rem)}
@@ -23,13 +23,14 @@
   .nf p{margin:.875rem auto 0;max-width:28rem;color:var(--muted);font-weight:300}
   .nf-acts{margin-top:1.75rem;display:flex;gap:.625rem;justify-content:center;flex-wrap:wrap}
   @media (prefers-reduced-motion:reduce){.nf-mascot img{animation:none}}
+  .nf-mascot:has(.m-vid){mix-blend-mode:multiply}
 </style>
 </head>
 <body>
 <main class="nf">
   <a class="brand nf-brand" href="/" aria-label="Neelux — на главную"><span class="lg" aria-hidden="true"></span>Neelux</a>
   <div>
-    <figure class="nf-mascot" aria-hidden="true"><img src="/mascot-cheer-600.webp" alt="" width="600" height="600"></figure>
+    <figure class="nf-mascot" aria-hidden="true"><video class="m-vid" autoplay muted loop playsinline preload="auto" poster="/mascot-cheer-poster.webp" width="640" height="640" data-mascot aria-hidden="true"><source src="/mascot-cheer.webm" type="video/webm"><source src="/mascot-cheer.mp4" type="video/mp4"></video></figure>
     <p class="nf-code" aria-hidden="true"><span>404</span></p>
     <h1>Такой страницы <span class="mute">нет</span></h1>
     <p>Возможно, ссылка устарела или в адресе опечатка. Всё главное — услуги, цены и калькулятор — на главной.</p>
@@ -39,5 +40,6 @@
     </div>
   </div>
 </main>
+<script>if(matchMedia('(prefers-reduced-motion: reduce)').matches)document.querySelectorAll('video[data-mascot]').forEach(function(v){v.removeAttribute('autoplay');v.pause();});</script>
 </body>
 </html>

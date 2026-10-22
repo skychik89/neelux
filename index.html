@@ -21,8 +21,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700&family=Unbounded:wght@500;600&family=Playfair+Display:ital,wght@1,500&display=swap">
-<link rel="preload" as="image" href="mascot-welcome-600.webp" imagesrcset="mascot-welcome-600.webp 600w, mascot-welcome-1000.webp 1000w" imagesizes="(max-width: 760px) 16rem, 27rem">
-<link rel="stylesheet" href="site.css?v=20261021">
+<link rel="preload" as="image" href="mascot-welcome-poster.webp">
+<link rel="stylesheet" href="site.css?v=20261021d">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Organization","name":"Neelux","url":"https://neelux.space/",
  "description":"Digital-студия: сайты, Telegram-боты, Яндекс Карты и 2ГИС, дизайн, веб-приложения и AI.",
@@ -30,7 +30,7 @@
  "contactPoint":[{"@type":"ContactPoint","contactType":"sales","url":"https://t.me/xwias","availableLanguage":["ru"]}]}
 </script>
 <script>document.documentElement.classList.add('js');setTimeout(function(){if(!window.NEELUX_READY)document.documentElement.classList.remove('js');},3000);</script>
-<script defer src="site.js?v=20261021"></script>
+<script defer src="site.js?v=20261021d"></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -102,7 +102,7 @@
     <p class="hero-meta intro" style="--d:4"><span>Пакеты от <b data-pkg-min>19&nbsp;900&nbsp;₽</b></span><i aria-hidden="true"></i><span>Открытые цены и калькулятор</span><i aria-hidden="true"></i><span>Отвечаем лично в Telegram</span></p>
   </div>
   <figure class="hero-mascot intro" style="--d:2" aria-hidden="true">
-    <img src="mascot-welcome-600.webp" srcset="mascot-welcome-600.webp 600w, mascot-welcome-1000.webp 1000w" sizes="(max-width: 760px) 16rem, 27rem" alt="" width="600" height="600" decoding="async" fetchpriority="high">
+    <video class="m-vid" muted loop playsinline preload="auto" poster="mascot-welcome-poster.webp" width="640" height="640" data-mascot aria-hidden="true"><source src="mascot-welcome.webm" type="video/webm"><source src="mascot-welcome.mp4" type="video/mp4"></video>
   </figure>
   </div>
 
@@ -269,7 +269,7 @@
     <div class="dirs">
       <nav class="dir-nav" aria-label="Направления">
         <ol id="dirNav"></ol>
-        <figure class="dir-mascot" aria-hidden="true"><img src="mascot-tablet-600.webp" alt="" width="600" height="713" loading="lazy" decoding="async"></figure>
+        <figure class="dir-mascot" aria-hidden="true"><video class="m-vid" muted loop playsinline preload="none" poster="mascot-tablet-poster.webp" width="640" height="640" data-mascot aria-hidden="true"><source src="mascot-tablet.webm" type="video/webm"><source src="mascot-tablet.mp4" type="video/mp4"></video></figure>
       </nav>
       <div class="dir-list" id="dirList"></div>
     </div>
@@ -523,7 +523,7 @@
         </div>
       </div>
       <div class="calc-side">
-      <figure class="calc-mascot" aria-hidden="true"><img src="mascot-point-600.webp" alt="" width="600" height="656" loading="lazy" decoding="async"></figure>
+      <figure class="calc-mascot" aria-hidden="true"><video class="m-vid" muted loop playsinline preload="none" poster="mascot-point-poster.webp" width="640" height="640" data-mascot aria-hidden="true"><source src="mascot-point.webm" type="video/webm"><source src="mascot-point.mp4" type="video/mp4"></video></figure>
       <aside class="calc-res dark" id="calcRes" aria-live="polite">
         <div class="cr-top"><p class="cr-k">Ваш расчёт</p><button class="cr-reset" type="button" id="cReset">Сбросить</button></div>
         <p class="cr-sum" id="cSum">—</p>
@@ -587,7 +587,6 @@
 <section class="contact" id="contact" aria-labelledby="ctH">
   <div class="wrap contact-grid">
     <div class="contact-copy rv">
-      <figure class="contact-mascot" aria-hidden="true"><img src="mascot-wave-600.webp" alt="" width="600" height="900" loading="lazy" decoding="async"></figure>
       <p class="kicker">Заявка</p>
       <h2 class="h2" id="ctH">Обсудим ваш <span class="mute">проект?</span></h2>
       <p class="sec-lead">Расскажите задачу в двух словах — предложим решение и посчитаем стоимость. Заявка уходит в Telegram, отвечаем лично.</p>
@@ -603,6 +602,7 @@
       </div>
     </div>
     <div class="form-card rv">
+      <figure class="contact-mascot" aria-hidden="true"><video class="m-vid" muted loop playsinline preload="none" poster="mascot-wave-poster.webp" width="640" height="640" data-mascot aria-hidden="true"><source src="mascot-wave.webm" type="video/webm"><source src="mascot-wave.mp4" type="video/mp4"></video></figure>
       <form id="form" novalidate>
         <h3>Заявка</h3>
         <div class="field"><label for="fName">Имя</label><input id="fName" name="name" autocomplete="name" required aria-describedby="eName" placeholder="Как к вам обращаться"><span class="err" id="eName"></span></div>
