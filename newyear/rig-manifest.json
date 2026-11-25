@@ -1,0 +1,54 @@
+{
+  "ready": true,
+  "approach": "layered-2d-rig",
+  "visualReference": "../visuals-v2/option-1.png",
+  "canvas": {
+    "width": 1254,
+    "height": 1254
+  },
+  "assetBase": "/newyear/rig",
+  "assets": [
+    "atrium-background.webp",
+    "mascot-open.webp",
+    "mascot-body.webp",
+    "mascot-blink.webp"
+  ],
+  "component": "MascotRig.jsx",
+  "stylesheet": "MascotRig.css",
+  "anchors": {
+    "head": [
+      "51%",
+      "43%"
+    ],
+    "arm": [
+      "68%",
+      "51%"
+    ]
+  },
+  "zOrder": [
+    "arm",
+    "body",
+    "head-with-blink-regions",
+    "collar"
+  ],
+  "animations": [
+    "independent-head-turn",
+    "separate-arm-greeting",
+    "generated-closed-eye-blink"
+  ],
+  "verified": "Browser-rendered independent animation rig; head/arm seam corrected and closed-eyelid alignment visually checked",
+  "limitations": [
+    "Layered 2D puppet, not a 3D model or generated video",
+    "Original pose reused; head and arm separated with clipping, body and closed eyelids generated independently"
+  ],
+  "sources": {
+    "background": "exec-3060ddb1-3b3f-4aad-8852-a62e565fca1c.png",
+    "body": "exec-2ef70fbf-43be-49ac-ad8c-9e29af60555e.png",
+    "blink": "exec-24a75f10-8c61-4abe-995f-df19c0ce9edd.png"
+  },
+  "background": {
+    "width": 1586,
+    "height": 992,
+    "bytes": 292712
+  }
+}

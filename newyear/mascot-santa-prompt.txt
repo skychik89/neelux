@@ -1,0 +1,9 @@
+Use case: identity-preserve.
+Asset type: a separate transparent character PNG for a winter website hero, high quality 3D plush character.
+Input image 1 is the EXACT Neelux mascot identity reference and edit target. Input image 2 is ONLY a costume and art-direction reference; do not recreate its webpage or scenery.
+Primary request: Dress the exact black fuzzy Neelux character from image 1 in the luxurious red Ded Moroz / Father Frost coat and hat shown on the character in image 2. Preserve the recognizable face shape, enormous upward-looking expressive eyes, two angular asymmetric ears, little smiling mouth, charcoal fuzzy material, limbs and neon lime curved arrow tail of image 1. Keep the bright lime square on chest visible between the coat collar. Both arms extended in the friendly welcoming pose.
+Costume: rich deep red coat reaching near feet, embroidered subtle white snowflake winter motifs, thick white fur collar, cuffs and hem, dark brown belt and silver buckle, floppy red hat with white fur and pompom fitted around angular ears. The entire face remains uncovered, no beard. This is the same mascot wearing clothes.
+Composition: one full-body character centered, all ears, hat, fingers, feet and full arrow tail in frame, comfortable 7 percent padding around silhouette. Similar near frontal view to image 1. The lime tail arrow visible on viewer left. No other subjects.
+Lighting: cool soft studio light suitable for silver-blue winter scene, subtle lime bounce from arrow, detailed charcoal fur and fabric.
+Background MUST be genuinely transparent alpha; no opaque white or colored background, no checkerboard pattern baked in. No floor, no scenery, no snowdrifts, no baubles, no glass shape, no typography, no website. Just the cleanly isolated character with fine fur edges.
+Do not redesign face, turn it into rabbit, add pupils or features, or invent a second character.
