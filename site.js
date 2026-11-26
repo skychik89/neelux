@@ -735,10 +735,8 @@ const ADDON_GROUPS = [
 const LEAD_ENDPOINT = '';
 const TG_USER = 'xwias';
 
-/* Яндекс Метрика. Пусто — выключено. Впишите номер счётчика, например '12345678'.
-   Цели (создайте их в Метрике как «JavaScript-событие» с такими идентификаторами):
-   cta_discuss, lead_submit, calc_send, calc_share, calc_pdf, tg_click, tg_quick, pkg_select, demo_tab, concept_click */
-const METRIKA_ID = '';
+/* Analytics is owned by analytics.js and runs only after the visitor's choice.
+   lead_draft means prepared text; lead_received requires a successful server response. */
 
 /* Быстрые сообщения: кнопка открывает чат @xwias с готовой фразой */
 const QUICK_MSGS = [
@@ -791,13 +789,9 @@ function copy(text){
 function store(k, v){ try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch(e){ return null; } }
 function go(sel){ var el = typeof sel === 'string' ? $(sel) : sel; if (el) el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block:'start' }); }
 
-/* ---------- Яндекс Метрика и цели (работает, только если задан METRIKA_ID) ---------- */
-function goal(name){ try { if (METRIKA_ID && typeof window.ym === 'function') window.ym(+METRIKA_ID, 'reachGoal', name); } catch(e){} }
-if (METRIKA_ID) {
-  (function(m, e, t, r, i){ m[i] = m[i] || function(){ (m[i].a = m[i].a || []).push(arguments); }; m[i].l = 1 * new Date();
-    var k = e.createElement(t), a = e.getElementsByTagName(t)[0]; k.async = 1; k.src = r; a.parentNode.insertBefore(k, a); })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
-  window.ym(+METRIKA_ID, 'init', { clickmap:true, trackLinks:true, accurateTrackBounce:true });
-}
+/* ---------- Необязательная событийная аналитика ---------- */
+window.NEELUX_ANALYTICS_HOOKED = true;
+function goal(name){ try { if (window.NeeluxAnalytics) window.NeeluxAnalytics.track(name); } catch(e){} }
 document.addEventListener('click', function(e){
   var a = e.target.closest('a,button'); if (!a) return;
   var href = a.getAttribute('href') || '';
@@ -1065,6 +1059,7 @@ function leadText(){
   if(selectedTask)L.push('Выбранная задача: '+selectedTask);
   var m = form.elements.message.value.trim(); if (m) L.push('Задача: ' + m);
   var cc = $('#fCalc').dataset.v; if (cc) L.push('Расчёт: ' + cc);
+  if (window.NeeluxAnalytics) L.push('Источник: ' + window.NeeluxAnalytics.attributionLabel());
   L.push('Согласие на обработку данных для ответа на обращение: https://neelux.space/consent.html (редакция 25.11.2026)');
   return L.join('\n');
 }
@@ -1081,13 +1076,13 @@ form.addEventListener('submit', function(e){
   var text = leadText(), lastTs = Number(store('neelux-lead-ts') || 0);
   if (Date.now() - lastTs < 30000) { toast(lastLeadText === text ? 'Сообщение уже подготовлено — проверьте Telegram' : 'Подождите полминуты перед повторной отправкой'); return; }
   store('neelux-lead-ts', String(Date.now())); lastLeadText = text;
-  goal('lead_submit');
+  goal('lead_draft');
   if (!LEAD_ENDPOINT) { openTg(text); finish(); return; }
   var btn = $('#fSubmit'), lbl = $('span', btn); btn.disabled = true; lbl.textContent = 'Отправляем…';
   var ctl = 'AbortController' in window ? new AbortController() : null, to = setTimeout(function(){ if (ctl) ctl.abort(); }, 8000);
   fetch(LEAD_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, signal: ctl ? ctl.signal : undefined,
     body: JSON.stringify({ name:form.elements.name.value.trim(), contact:form.elements.contact.value.trim(), service:typeSel.value, serviceLabel:typeLabel(), message:form.elements.message.value.trim(), calc:$('#fCalc').dataset.v || '', source:'neelux.space' }) })
-    .then(function(r){ if (!r.ok) throw 0; $('h3', done).textContent = 'Заявка отправлена!'; $('p', done).textContent = 'Мы получили заявку и скоро напишем. Чтобы ускорить — напишите @xwias в Telegram.'; finish(); })
+    .then(function(r){ if (!r.ok) throw 0; goal('lead_received'); $('h3', done).textContent = 'Заявка отправлена!'; $('p', done).textContent = 'Мы получили заявку и скоро напишем. Чтобы ускорить — напишите @xwias в Telegram.'; finish(); })
     .catch(function(){ openTg(text); finish(); })
     .then(function(){ clearTimeout(to); btn.disabled = false; lbl.textContent = 'Отправить в Telegram'; });
 });
