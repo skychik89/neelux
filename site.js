@@ -732,7 +732,7 @@ const ADDON_GROUPS = [
 
 /* Автоотправка заявок на свой сервер. Пусто — выключено (открывается чат @xwias с готовым текстом).
    Токены бота сюда НЕ вставлять: endpoint сам пересылает заявку в Telegram на стороне сервера. */
-const LEAD_ENDPOINT = 'https://neelux-receipts.179-254-115-142.sslip.io/v1/leads';
+const LEAD_ENDPOINT = 'https://leads.neelux.space/v1/leads';
 const TG_USER = 'xwias';
 
 /* Analytics is owned by analytics.js and runs only after the visitor's choice.
