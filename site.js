@@ -732,7 +732,7 @@ const ADDON_GROUPS = [
 
 /* Автоотправка заявок на свой сервер. Пусто — выключено (открывается чат @xwias с готовым текстом).
    Токены бота сюда НЕ вставлять: endpoint сам пересылает заявку в Telegram на стороне сервера. */
-const LEAD_ENDPOINT = '';
+const LEAD_ENDPOINT = 'https://neelux-receipts.179-254-115-142.sslip.io/v1/leads';
 const TG_USER = 'xwias';
 
 /* Analytics is owned by analytics.js and runs only after the visitor's choice.
@@ -1046,7 +1046,7 @@ function validate(field){
   var ok = true, n = form.elements.name, c = form.elements.contact, cv = c.value.trim();
   if (!field || field === 'name') { if (n.value.trim().length < 2 || n.value.length > 80) { setErr(n, 'Напишите, как к вам обращаться'); ok = false; } else setErr(n, ''); }
   var tg = /^@?[a-zA-Z][a-zA-Z0-9_]{4,31}$/.test(cv.replace(/^https?:\/\/t\.me\//, ''));
-  var ph = cv.replace(/\D/g, '').length >= 10 && /^[\d\s()+-]+$/.test(cv);
+  var ph = cv.replace(/\D/g, '').length >= 10 && cv.replace(/\D/g, '').length <= 15 && /^[\d\s()+-]+$/.test(cv);
   if (!field || field === 'contact') { if ((!tg && !ph) || cv.length > 100) { setErr(c, 'Укажите Telegram (@username) или телефон'); ok = false; } else setErr(c, ''); }
   if (!field) { var consent = form.elements.consent, message = form.elements.message; if (!consent.checked) { setErr(consent,'Отметьте согласие на обработку данных для ответа на обращение'); ok=false; } else setErr(consent,''); if (message.value.length>2000) { setErr(message,'Сократите описание до 2000 символов'); ok=false; } else setErr(message,''); }
   if (!field && !ok) { var bad = form.querySelector('[aria-invalid="true"]'); if (bad) bad.focus(); }
@@ -1060,7 +1060,7 @@ function leadText(){
   var m = form.elements.message.value.trim(); if (m) L.push('Задача: ' + m);
   var cc = $('#fCalc').dataset.v; if (cc) L.push('Расчёт: ' + cc);
   if (window.NeeluxAnalytics) L.push('Источник: ' + window.NeeluxAnalytics.attributionLabel());
-  L.push('Согласие на обработку данных для ответа на обращение: https://neelux.space/consent.html (редакция 25.11.2026)');
+  L.push('Согласие на обработку данных для ответа на обращение: https://neelux.space/consent.html (редакция 27.11.2026)');
   return L.join('\n');
 }
 function openTg(text){
@@ -1069,26 +1069,42 @@ function openTg(text){
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 function finish(){ form.hidden = true; done.hidden = false; done.focus(); store('neelux-brief', null); }
+var sendingLead=false, confirmedReceipts=new Set();
+var originalDoneTitle=$('h3',done).textContent, originalDoneText=$('p',done).textContent;
 form.addEventListener('submit', function(e){
   e.preventDefault();
-  if (form.elements.website.value) return;
-  if (!validate()) return;
-  var text = leadText(), lastTs = Number(store('neelux-lead-ts') || 0);
-  if (Date.now() - lastTs < 30000) { toast(lastLeadText === text ? 'Сообщение уже подготовлено — проверьте Telegram' : 'Подождите полминуты перед повторной отправкой'); return; }
-  store('neelux-lead-ts', String(Date.now())); lastLeadText = text;
+  if (sendingLead || form.elements.website.value || !validate()) return;
+  var text = leadText();
+  if (!LEAD_ENDPOINT) {
+    var lastTs=Number(store('neelux-lead-ts')||0);
+    if(Date.now()-lastTs<30000){toast('Сообщение уже подготовлено — проверьте Telegram');return;}
+    store('neelux-lead-ts',String(Date.now()));lastLeadText=text;
+    goal('lead_draft');openTg(text);finish();return;
+  }
+  if(!window.NeeluxReceipt){toast('Приём заявок пока недоступен. Напишите нам по ссылке Telegram.');return;}
+  var payload={name:form.elements.name.value.trim(),contact:form.elements.contact.value.trim(),
+    service:typeSel.value,serviceLabel:typeLabel(),message:form.elements.message.value.trim(),
+    calc:$('#fCalc').dataset.v||'',consent:form.elements.consent.checked};
+  var btn=$('#fSubmit'),lbl=$('span',btn),disabled=[];
+  Array.from(form.elements).forEach(function(el){disabled.push([el,el.disabled]);el.disabled=true;});
+  sendingLead=true;lbl.textContent='Отправляем…';
   goal('lead_draft');
-  if (!LEAD_ENDPOINT) { openTg(text); finish(); return; }
-  var btn = $('#fSubmit'), lbl = $('span', btn); btn.disabled = true; lbl.textContent = 'Отправляем…';
-  var ctl = 'AbortController' in window ? new AbortController() : null, to = setTimeout(function(){ if (ctl) ctl.abort(); }, 8000);
-  fetch(LEAD_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, signal: ctl ? ctl.signal : undefined,
-    body: JSON.stringify({ name:form.elements.name.value.trim(), contact:form.elements.contact.value.trim(), service:typeSel.value, serviceLabel:typeLabel(), message:form.elements.message.value.trim(), calc:$('#fCalc').dataset.v || '', source:'neelux.space' }) })
-    .then(function(r){ if (!r.ok) throw 0; goal('lead_received'); $('h3', done).textContent = 'Заявка отправлена!'; $('p', done).textContent = 'Мы получили заявку и скоро напишем. Чтобы ускорить — напишите @xwias в Telegram.'; finish(); })
-    .catch(function(){ openTg(text); finish(); })
-    .then(function(){ clearTimeout(to); btn.disabled = false; lbl.textContent = 'Отправить в Telegram'; });
+  window.NeeluxReceipt.send(LEAD_ENDPOINT,payload).then(function(receipt){
+    if(!confirmedReceipts.has(receipt.receiptId)){confirmedReceipts.add(receipt.receiptId);goal('lead_received');}
+    $('h3',done).textContent='Заявка получена';
+    $('p',done).textContent='Сохранена в рабочей почте Neelux Studio. Номер: '+receipt.receiptId+'. Мы свяжемся с вами по указанному контакту.';
+    lastLeadText=text;$('#doneOpen').href='https://t.me/'+TG_USER+'?text='+encodeURIComponent(text);$('#doneOpen').textContent='Обсудить в Telegram';finish();
+  }).catch(function(error){
+    toast(error.message==='try_later'?'Слишком много попыток. Повторите позже или напишите нам в Telegram.':'Получение заявки пока не подтверждено. Повторите отправку или напишите нам в Telegram.');
+  }).finally(function(){
+    disabled.forEach(function(pair){pair[0].disabled=pair[1];});
+    sendingLead=false;lbl.textContent='Отправить заявку';
+  });
 });
+if(LEAD_ENDPOINT){$('span',$('#fSubmit')).textContent='Отправить заявку';$('.fnote',form).textContent='После нажатия данные передаются в защищённый приёмник Neelux Studio. Подтверждение и номер появятся после сохранения заявки. Не указывайте чувствительные данные.';}
 $('#fSubmit').disabled=false;
 form.elements.consent.addEventListener('change',function(){if(this.checked)setErr(this,'');});
-$('#doneNew').addEventListener('click', function(){ form.reset(); attachCalc(''); done.hidden = true; form.hidden = false; $('#fName').focus(); });
+$('#doneNew').addEventListener('click', function(){ window.NeeluxReceipt?.reset(); $('h3',done).textContent=originalDoneTitle; $('p',done).textContent=originalDoneText; $('#doneOpen').textContent='Открыть Telegram'; form.reset(); attachCalc(''); done.hidden = true; form.hidden = false; $('#fName').focus(); });
 
 /* ---------- появление ---------- */
 requestAnimationFrame(function(){ document.body.classList.add('is-ready'); });
