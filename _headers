@@ -4,7 +4,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-bYowenQqxZMYQ4zXlqSv2wx3evvxvMl7G9zVnFu91V8=' 'sha256-Klld5V9d2Ot3ssrQrPbbdWme45zX4mNI8KR8+wOqN98=' 'sha256-1n5ZLRgfBqhwkCXo0pOVGK2kilAkNA200Nq60oXwsWY=' 'sha256-81wEFmZ3OXklo0gIBZ+ngFuS64eLbVeHTTYXQNSrXPs=' 'sha256-CmRM3ThtLuAC8C8W35/LuSipuUik0VKP+uht3aaDrVw=' 'sha256-OsptIGB36NaFC8xQ5g7s3qrQzVrD1znQPW5Zr0G1fps=' 'sha256-6Ea5GK3kAADZKF+yTKSd4xDO54YuwALK1HHWqX1JiOk=' 'sha256-XxOsVAPzR0R671wtkPyIDvuE3aytQw9fm5voIj/eBEU='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://mc.yandex.ru 'sha256-bYowenQqxZMYQ4zXlqSv2wx3evvxvMl7G9zVnFu91V8=' 'sha256-QIP3CLXAr0DqjEXTTZl0m2GQzRm03LV8+fyOHqiGd/M=' 'sha256-hbOHZ7/UOflvZkGOg4G/DJY96XEviTogLqPoNlvlD3o=' 'sha256-81wEFmZ3OXklo0gIBZ+ngFuS64eLbVeHTTYXQNSrXPs=' 'sha256-DZ0VdgSGHZvRTTo2pJKzizP0c1x2WAzoJHtly0HP9OA=' 'sha256-pRlvUw+kEEPcfzlp9B+5tc1V2S9vJfrkmJBjhxkoKPc=' 'sha256-ggRfzshLEFvVt+iGUOoVye08ETVJ+ofjrTDuwk9t5ig=' 'sha256-vEssql+gASzkqpo50mt+VDHF1AygFVRWe3IiSh5h7Uw='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://mc.yandex.ru https://mc.yandex.com; font-src 'self'; connect-src 'self' https://mc.yandex.ru https://mc.yandex.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
