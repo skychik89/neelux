@@ -1,5 +1,5 @@
 {
-  "version": "0f7d5f726b0aafa7",
+  "version": "c9c13d65337da4fb",
   "assets": [
     "browser-bridge.js",
     "client-brief.js",
@@ -32,10 +32,14 @@
     "shared--cloud.js",
     "shared--config.js",
     "shared--core.js",
+    "shared--handoff-core.js",
+    "shared--handoff.js",
     "shared--knowledge-core.js",
     "shared--liquid-background.png",
     "shared--liquid-ui.css",
     "shared--message-format.js",
+    "shared--partner-workspace.js",
+    "shared--partner.css",
     "shared--session-manager.js",
     "shared--studio.css",
     "shared--ui.js",
