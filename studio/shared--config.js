@@ -1,0 +1,2 @@
+export const SUPABASE_URL=window.NEELUX_MOBILE_CONFIG.url;
+export const SUPABASE_ANON_KEY=window.NEELUX_MOBILE_CONFIG.key;

@@ -1,0 +1,22 @@
+// Authorship confirmed by the studio owner on 17 November 2026.
+// Site features checked on the public URLs; no commercial metrics were supplied.
+export const CASES=Object.freeze([
+ {id:'brooklands',name:'Brooklands Detailing',sector:'auto',url:'https://brooklandsdetailing.ru/',summary:'Сайт детейлинг-центра: услуги по уходу за автомобилем и примеры работ.',features:['Каталог услуг','Портфолио работ','Понятный путь к обращению'],use:'Показать, как представить сложные услуги, результаты работ и следующий шаг для владельца автомобиля.'},
+ {id:'keeplooking',name:'KEEP LOOKING GROUP',sector:'beauty',url:'https://keeplooking.ru/',summary:'Сайт группы beauty-проектов: салоны, бренды и направления сотрудничества.',features:['Разделение направлений','Салоны и бренды','Переходы к нужному проекту'],use:'Подходит для обсуждения структуры сайта сети или бизнеса с несколькими направлениями.'},
+ {id:'mannik',name:'Mannik Studio',sector:'nails',url:'https://mannik-studio.ru/',summary:'Сайт студии маникюра с услугами, ценами, атмосферой и онлайн-записью.',features:['Услуги и цены','Фотографии студии','Онлайн-запись'],use:'Показать путь от знакомства со студией и услугами к записи на процедуру.'},
+ {id:'firm',name:'FIRM Барбершоп',sector:'barber',url:'https://firmbarbershop.ru/',summary:'Сайт барбершопа с услугами, мастерами, адресами и онлайн-записью.',features:['Мастера и услуги','Выбор филиала','Онлайн-запись'],use:'Подходит для разговора об услугах, выборе мастера и записи в нужный филиал.'},
+ {id:'mone',name:'MONE',sector:'beauty',url:'https://salonmone.ru/',summary:'Сайт сети салонов красоты с услугами, адресами и переходом к записи.',features:['Меню услуг','Адреса салонов','Запись и сертификаты'],use:'Показать организацию большого перечня услуг и нескольких салонов в одной структуре.'},
+ {id:'bjorn',name:'Björn',sector:'restaurant',url:'https://bjorn.rest/',summary:'Сайт ресторана северной кухни: визуальная подача, концепция, новости и контакты.',features:['Образ ресторана','Концепция и новости','Контакты и адрес'],use:'Подходит для обсуждения атмосферы ресторана и ясной подачи информации гостям.'},
+ {id:'ava',name:'AVA BISTRO',sector:'restaurant',url:'https://avabistro.ru/',summary:'Сайт бистро с меню, галереей, контактами и бронированием стола.',features:['Меню','Галерея','Бронирование стола'],use:'Показать путь гостя от знакомства с заведением до выбора меню и бронирования.'},
+ {id:'surf',name:'Surf Coffee',sector:'cafe',url:'https://www.surfcoffee.ru/',summary:'Сайт бренда кофеен, объединяющий образ бренда и информацию о проектах.',features:['Визуальная система бренда','Информация о кофейнях','Направления проекта'],use:'Показать, как объединить узнаваемую подачу и несколько направлений кофейного бренда.'}
+].map(x=>Object.freeze({...x,authorship:'studio',checkedAt:'2026-11-17',image:`case-assets/${x.id}.jpg`,metrics:null})));
+export const SECTORS={auto:'Авто и детейлинг',beauty:'Салоны красоты',nails:'Маникюр',barber:'Барбершопы',restaurant:'Рестораны',cafe:'Кофейни',retail:'Магазины',general:'Другие сферы'};
+export const caseById=id=>CASES.find(x=>x.id===id)||null;
+export function detectSector(value=''){
+ const s=(typeof value==='string'?value:String(value?.niche||value?.name||value?.context||'')).toLowerCase();
+ for(const [id,re] of [['barber',/барбер|barber/],['nails',/маникюр|педикюр|ногт|nail/],['auto',/детейлинг|автосервис|автомой|автомоб|шиномонтаж|detailing/],['cafe',/кофейн|кофе\b|coffee/],['restaurant',/ресторан|бистро|кафе|пицц|доставк.*ед|restaurant|bistro/],['beauty',/салон|красот|парикмах|бров|ресниц|косметол|beauty/],['retail',/магазин|торгов|каталог|одежд|интернет-магаз/]])if(re.test(s))return id;
+ return 'general';
+}
+export function relevantCases(value,limit=2){const sector=Object.hasOwn(SECTORS,value)?value:detectSector(value),related=sector==='nails'||sector==='barber'?['beauty']:sector==='cafe'?['restaurant']:[];return [...CASES.filter(x=>x.sector===sector),...CASES.filter(x=>related.includes(x.sector))].slice(0,limit);}
+export function caseText(c){return `Проект Neelux Studio — ${c.name}\n${c.summary}\n${c.url}`;}
+export function caseKnowledge(value,caseId){const chosen=caseById(caseId),cases=chosen?[chosen]:relevantCases(value);return cases.map(({id,name,url,summary,features})=>({id,name,url,summary,features,authorship:'studio',metrics:'Показатели, сроки и стоимость не предоставлены'}));}
