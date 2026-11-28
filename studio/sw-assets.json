@@ -1,7 +1,9 @@
 {
-  "version": "c997b3f63b52358f",
+  "version": "0f7d5f726b0aafa7",
   "assets": [
     "browser-bridge.js",
+    "client-brief.js",
+    "client-model.js",
     "config.js",
     "data.js",
     "icons--icon180.png",
@@ -16,6 +18,7 @@
     "shared--app.css",
     "shared--appearance.js",
     "shared--beta-glass.css",
+    "shared--brief-queue.js",
     "shared--case-assets--ava.jpg",
     "shared--case-assets--bjorn.jpg",
     "shared--case-assets--brooklands.jpg",
@@ -35,6 +38,8 @@
     "shared--message-format.js",
     "shared--session-manager.js",
     "shared--studio.css",
-    "shared--ui.js"
+    "shared--ui.js",
+    "update-helper.js",
+    "usability.css"
   ]
 }
