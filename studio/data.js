@@ -1,5 +1,6 @@
 import * as cloud from './shared--cloud.js';
 import {STAGES,leadPayload,dayStart,monthStart} from './shared--core.js';
+import {clientQuery} from './client-model.js';
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const uuid=id=>{if(!UUID.test(id))throw Error('Карточка не найдена');return id;};
 export async function guard(me){if(!navigator.onLine)throw Error('Нет интернета. Подключитесь к сети и повторите действие.');const id=await cloud.userId();if(!me||id!==me.id||me.status!=='active')throw Error('Аккаунт изменился или доступ ограничен. Войдите снова.');return uuid(id);}
@@ -8,9 +9,9 @@ export async function rpc(me,name,body={}){return write(me,'rpc/'+name,'POST',bo
 export async function overview(me){const id=uuid(me.id);return Promise.all([
  cloud.rpc('my_stats',{p_day:new Date(dayStart()).toISOString(),p_month:new Date(monthStart()).toISOString()}),
  cloud.select('tasks',`assignee_id=eq.${id}&status=eq.open&select=*&order=due_at.asc.nullslast,created_at.desc&limit=5`),
- cloud.select('leads',`owner_id=eq.${id}&remind_at=lte.${encodeURIComponent(new Date().toISOString())}&stage=in.(new,contacted,replied,call)&select=id,name,niche,remind_at,stage&order=remind_at.asc&limit=5`)
+ cloud.select('leads',`owner_id=eq.${id}&remind_at=lte.${encodeURIComponent(new Date().toISOString())}&stage=in.(new,contacted,replied,call)&select=id,name,niche,city,website,rating,remind_at,stage,owner_id&order=remind_at.asc&limit=5`)
 ]);}
-export function queryClients(me,{term='',stage='',offset=0}={}){const q=new URLSearchParams({owner_id:`eq.${uuid(me.id)}`,select:'*',order:'updated_at.desc,id.asc',limit:'40',offset:String(Math.max(0,offset))});if(Object.hasOwn(STAGES,stage))q.set('stage','eq.'+stage);const safe=term.trim().replace(/[*,()."\\%]/g,' ').slice(0,100);if(safe)q.set('or',`(name.ilike.*${safe}*,city.ilike.*${safe}*,niche.ilike.*${safe}*,phone_key.ilike.*${safe.replace(/\D/g,'')||safe}*)`);return cloud.select('leads',q.toString());}
+export function queryClients(me,options={}){return cloud.select('leads',clientQuery(uuid(me.id),options));}
 export async function getLead(me,id){const rows=await cloud.select('leads',`id=eq.${uuid(id)}&owner_id=eq.${uuid(me.id)}&select=*`);if(!rows.length)throw Error('Карточка недоступна или передана другому сотруднику');return rows[0];}
 export async function saveLead(me,lead,values){const stage=values.stage;if(!Object.hasOwn(STAGES,stage))throw Error('Неизвестный этап');const rows=await write(me,`leads?id=eq.${uuid(lead.id)}&owner_id=eq.${uuid(me.id)}&updated_at=eq.${encodeURIComponent(lead.updated_at)}`,'PATCH',{stage,notes:String(values.notes).slice(0,15000),remind_at:values.remind_at?new Date(values.remind_at).toISOString():null});if(!rows?.length)throw Error('Карточку уже изменили на другом устройстве. Обновите её перед сохранением.');return rows[0];}
 export async function addLead(me,values){if(!values.name?.trim())throw Error('Укажите название клиента');return rpc(me,'claim_lead',{p:leadPayload({name:values.name,city:values.city,niche:values.niche,phones:values.phone?[values.phone]:[],source:'manual'})});}
