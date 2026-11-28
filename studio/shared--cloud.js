@@ -90,6 +90,15 @@ export async function changePassword(password) {
 
 export async function userId() {return (await session())?.user?.id || null;}
 
+// The remote private store verifies this primary user session independently.
+export async function partnerCall(workspace,body,options={}) {
+ if(!/^https:\/\/[a-z0-9]{20}\.supabase\.co\/functions\/v1\/partner-store$/.test(workspace?.gateway_url||''))throw new CloudError('Отдельная база не подключена','config');
+ const snapshot=await sessions.context();
+ if(!snapshot.auth||snapshot.auth.user?.id!==workspace.actor_id||options.expectedUser&&snapshot.auth.user?.id!==options.expectedUser)throw new CloudError('Аккаунт изменился — откройте кабинет заново','account_changed');
+ const response=await authorizedFetch(snapshot,({auth})=>fetch(workspace.gateway_url,{method:'POST',headers:{apikey:workspace.gateway_key,Authorization:'Bearer '+auth.access_token,'Content-Type':'application/json'},body:JSON.stringify(body),signal:options.signal?AbortSignal.any([options.signal,AbortSignal.timeout(35000)]):AbortSignal.timeout(35000)}));
+ const data=await response.json().catch(()=>({}));if(!response.ok||data.error)throw new CloudError(data.error||'Личная база сейчас недоступна','api');return data.data;
+}
+
 async function rawApi(path, {method = 'GET', body, prefer} = {},snapshot) {
  let r;
  try {
@@ -138,6 +147,7 @@ const TEAM_FIELDS='id,worker_rate,leader_rate,referral_bonus,plan_contacts,plan_
 export async function teamSettings({privateFields=false}={}) {const team=(await select('team_settings','id=eq.1&select='+TEAM_FIELDS))[0]||null;if(privateFields&&team){const secrets=(await select('admin_secrets','id=eq.1&select=ai_gemini,ai_groq,ai_openrouter'))[0];if(secrets)Object.assign(team,secrets);}return team;}
 export async function ai(action,input={},extra={},options={}){
  const snapshot=await sessions.context();if(!snapshot.auth)throw new CloudError('Войдите в аккаунт команды','auth');
+ if(options.expectedUser&&snapshot.auth.user?.id!==options.expectedUser)throw new CloudError('Аккаунт изменился — повторите действие','account_changed');
  if(options.expectedUser && snapshot.auth.user?.id!==options.expectedUser)throw new CloudError('Аккаунт изменился — повторите действие','account_changed');
  let response;try{response=await authorizedFetch(snapshot,({server:s,auth})=>fetch(`${s.url}/functions/v1/neelux-ai`,{method:'POST',headers:{apikey:s.key,Authorization:'Bearer '+auth.access_token,'Content-Type':'application/json'},body:JSON.stringify({action,input,...extra}),signal:options.signal?AbortSignal.any([options.signal,AbortSignal.timeout(100000)]):AbortSignal.timeout(100000)}));}catch(e){if(options.signal?.aborted)throw new CloudError('NEELUX AI: ожидание остановлено.','cancelled');if(e instanceof CloudError)throw e;throw new CloudError('NEELUX AI не отвечает. Проверьте интернет и повторите запрос.','network');}
  const data=await response.json().catch(()=>({}));
